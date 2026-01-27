@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id              Int      @id @default(autoincrement()) @map("admin_id")
+  firstName       String?  @map("admin_fname") @db.VarChar(50)
+  lastName        String?  @map("admin_lname") @db.VarChar(50)
+  mobileOne       String?  @map("mob_one") @db.VarChar(20)
+  mobileTwo       String?  @map("mob_two") @db.VarChar(20)
+  email           String?  @map("email_id") @db.VarChar(100)
+  pinCode         String?  @map("pinno") @db.VarChar(20)
+  country         String?  @map("country_name") @db.VarChar(100)
+  state           String?  @map("state_name") @db.VarChar(100)
+  address         String?  @db.Text
+  username        String   @unique @map("admin_username") @db.VarChar(30)
+  password        String   @map("admin_password") @db.VarChar(255)
+  passCriteria    String?  @map("pass_criteria") @db.VarChar(100)
+  profileImage    String?  @map("profile_img") @db.Text
+  adminType       String   @map("admin_type") @db.VarChar(20)
+  status          String   @default("1") @db.VarChar(1)
+  createdAt       DateTime @default(now()) @map("insert_date")
+  createdBy       String?  @map("insert_user") @db.VarChar(50)
+  updatedAt       DateTime @updatedAt @map("update_date")
+  updatedBy       String?  @map("update_user") @db.VarChar(50)
+
+  loginHistory    AdminLoginHistory[]
+
+  @@map("aa_0_admin_db")
+}
+
+model AdminLoginHistory {
+  id        Int      @id @default(autoincrement())
+  adminId   Int
+  ipAddress String?
+  userAgent String?
+  loginTime DateTime @default(now())
+  admin     Admin    @relation(fields: [adminId], references: [id])
+
+  @@map("admin_login_history")
+}
+
+
+
