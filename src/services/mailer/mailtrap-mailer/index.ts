@@ -1,5 +1,8 @@
-import { MailtrapMailer } from "./MailtrapMailer";
+import * as mailtrapMailer from "./MailtrapMailer";
+import { IMailer } from "../interface";
 
-const mailer = new MailtrapMailer();
+const mailer: IMailer = {
+  send: mailtrapMailer.send
+};
 
 export { mailer };

@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import config from "@/config";
-import { MailtrapMailer } from "@/services/mailer/mailtrap-mailer/MailtrapMailer";
+import * as mailtrapMailer from "@/services/mailer/mailtrap-mailer/MailtrapMailer";
 import { IMailNotification } from "@/services/mailer/interface";
 
 const sendMailMock = jest.fn().mockResolvedValue("Email sent successfully");
@@ -12,12 +12,6 @@ jest.mock("nodemailer", () => ({
 }));
 
 describe("MailtrapMailer", () => {
-  let mailer: MailtrapMailer;
-
-  beforeEach(() => {
-    mailer = new MailtrapMailer();
-  });
-
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -30,7 +24,7 @@ describe("MailtrapMailer", () => {
       html: "<p>Test email content</p>",
     };
 
-    await mailer.send(mailNotification);
+    await mailtrapMailer.send(mailNotification);
 
     expect(nodemailer.createTransport).toHaveBeenCalledWith({
       host: config.mail.host,

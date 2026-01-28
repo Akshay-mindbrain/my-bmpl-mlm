@@ -1,7 +1,5 @@
-import { IMailer, IMailNotification } from "../interface";
+import { IMailNotification } from "../interface";
 
-export class ConsoleLogMailer implements IMailer {
-  async send(mailNotification: IMailNotification) {
-    console.log(mailNotification.text);
-  }
-}
+export const send = async (mailNotification: IMailNotification) => {
+  console.log(mailNotification.text);
+};
