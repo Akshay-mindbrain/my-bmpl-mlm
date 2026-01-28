@@ -19,16 +19,17 @@ model Admin {
   lastName        String?  @map("admin_lname") @db.VarChar(50)
   mobileOne       String?  @map("mob_one") @db.VarChar(20)
   mobileTwo       String?  @map("mob_two") @db.VarChar(20)
-  email           String?  @map("email_id") @db.VarChar(100)
+  email           String?  @unique @map("email_id") @db.VarChar(100)
   pinCode         String?  @map("pinno") @db.VarChar(20)
   country         String?  @map("country_name") @db.VarChar(100)
   state           String?  @map("state_name") @db.VarChar(100)
   address         String?  @db.Text
   username        String   @unique @map("admin_username") @db.VarChar(30)
   password        String   @map("admin_password") @db.VarChar(255)
-  passCriteria    String?  @map("pass_criteria") @db.VarChar(100)
   profileImage    String?  @map("profile_img") @db.Text
-  adminType       String   @map("admin_type") @db.VarChar(20)
+  adminType       AdminType @map("admin_type")
+  accessToken     String?  @map("access_token") @db.Text
+  refreshToken    String?  @map("refresh_token") @db.Text
   status          String   @default("1") @db.VarChar(1)
   createdAt       DateTime @default(now()) @map("insert_date")
   createdBy       String?  @map("insert_user") @db.VarChar(50)
@@ -46,6 +47,7 @@ model AdminLoginHistory {
   ipAddress String?
   userAgent String?
   loginTime DateTime @default(now())
+  logoutTime DateTime? @map("logout_time")
   admin     Admin    @relation(fields: [adminId], references: [id])
 
   @@map("admin_login_history")
@@ -53,3 +55,9 @@ model AdminLoginHistory {
 
 
 
+
+enum AdminType {
+  SUPERADMIN
+  ADMIN
+  MANAGER
+}
