@@ -1,6 +1,7 @@
 import express from "express";
 import AuthController from "../../controllers/AuthController";
 import validateRequest from "../../middleware/validate-request";
+import authenticateUser from "../../middleware/authenticate-user";
 import Joi from "joi";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ const loginSchema = Joi.object({
 
 router.post("/signup", validateRequest(signupSchema), authController.signup);
 router.post("/login", validateRequest(loginSchema), authController.login);
+router.post("/logout", authenticateUser, authController.logout);
 
 export default router;
