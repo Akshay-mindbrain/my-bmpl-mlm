@@ -1,11 +1,10 @@
 import express from "express";
-import AuthController from "../../controllers/AuthController";
+import * as authController from "../../controllers/AuthController";
 import validateRequest from "../../middleware/validate-request";
 import authenticateUser from "../../middleware/authenticate-user";
 import Joi from "joi";
 
 const router = express.Router();
-const authController = new AuthController();
 
 const signupSchema = Joi.object({
     username: Joi.string().alphanum().min(3).max(30).required(),

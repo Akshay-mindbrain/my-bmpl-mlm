@@ -1,5 +1,8 @@
-import { ConsoleLogMailer } from "./ConsoleLogMailer";
+import * as consoleLogMailer from "./ConsoleLogMailer";
+import { IMailer } from "../interface";
 
-const mailer = new ConsoleLogMailer();
+const mailer: IMailer = {
+  send: consoleLogMailer.send
+};
 
 export { mailer };

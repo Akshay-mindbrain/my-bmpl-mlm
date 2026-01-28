@@ -1,11 +1,10 @@
 import express from "express";
-import UserController from "../../controllers/UserController";
+import * as userController from "../../controllers/UserController";
 import authenticateUser from "../../middleware/authenticate-user";
 import validateRequest from "../../middleware/validate-request";
 import Joi from "joi";
 
 const router = express.Router();
-const userController = new UserController();
 
 const userSchema = Joi.object({
     firstName: Joi.string().max(50),
@@ -31,6 +30,6 @@ router.post("/", validateRequest(userSchema), userController.create);
 router.get("/", userController.getAll);
 router.get("/:id", userController.getOne);
 router.put("/:id", validateRequest(updateSchema), userController.update);
-router.delete("/:id", userController.delete);
+router.delete("/:id", userController.deleteUser);
 
 export default router;
