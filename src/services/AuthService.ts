@@ -17,6 +17,7 @@ export default class AuthService {
             // Check for existing username
             const existingUsername = await this.authRepository.getAdminByUsername(data.username);
             if (existingUsername) {
+                //throw new 409({message: "username already exists"})
                 throw new CustomError({
                     message: "Username already exists. Please choose another one.",
                     statusCode: 409,
