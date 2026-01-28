@@ -39,4 +39,11 @@ export default class AuthRepository extends BaseRepository {
             data: { logoutTime: new Date() },
         });
     }
+
+    async getLatestLoginHistory(adminId: number): Promise<AdminLoginHistory | null> {
+        return this.client.adminLoginHistory.findFirst({
+            where: { adminId, logoutTime: null },
+            orderBy: { loginTime: "desc" },
+        });
+    }
 }
