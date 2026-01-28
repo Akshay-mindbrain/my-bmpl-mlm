@@ -6,6 +6,8 @@ const config = {
   consoleLogEmails: process.env.CONSOLE_LOG_EMAILS === "true",
   defaultPageSize: parseInt(process.env.DEFAULT_PAGE_SIZE || "5"),
   appSecret: process.env.APP_SECRET || "",
+  jwtAccessSecret: process.env.JWT_ACCESS_SECRET || "access-secret",
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || "refresh-secret",
   issuerBaseUrl: process.env.ISSUER_BASE_URL || "https://ussuer.com",
   audience: process.env.AUDIENCE || "default-audience",
   mail: {
