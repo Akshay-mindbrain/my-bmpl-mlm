@@ -71,9 +71,6 @@
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
   },
-  "prisma": {
-    "seed": "ts-node prisma/seed.ts"
-  },
   "_moduleAliases": {
     "@": "./dist",
     "@errors": "./dist/errors"
