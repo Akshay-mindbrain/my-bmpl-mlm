@@ -1,11 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import * as PackageService from "../services/Package.Service";
 
-
 export const createPackageController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const result = await PackageService.createPackage(req.body);
@@ -20,11 +19,10 @@ export const createPackageController = async (
   }
 };
 
-
 export const getAllPackagesController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const result = await PackageService.getAllPackages();
@@ -38,11 +36,10 @@ export const getAllPackagesController = async (
   }
 };
 
-
 export const getPackageByIdController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { id } = req.params;
@@ -58,11 +55,10 @@ export const getPackageByIdController = async (
   }
 };
 
-
 export const updatePackageController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { id } = req.params;
@@ -79,11 +75,10 @@ export const updatePackageController = async (
   }
 };
 
-
 export const deletePackageController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { id } = req.params;

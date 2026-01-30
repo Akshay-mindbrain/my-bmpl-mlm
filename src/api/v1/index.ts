@@ -7,8 +7,11 @@ import packagerouter from "./Packages/package.routes";
 const v1: Router = express.Router();
 
 v1.use("/health", health);
+
 v1.use("/auth", authRouter);
+
+//admin protected routes
+v1.use("/package", packagerouter);
 v1.use("/users", userRouter);
-v1.use("/package",packagerouter);
 
 export default v1;

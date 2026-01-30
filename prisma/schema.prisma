@@ -108,5 +108,8 @@ model Packages {
   BV                 Float
   dailyCap           Float
   coinsPerMonth      Float
-  packageDescription String  
+  packageDescription String
+
+
+
 }
