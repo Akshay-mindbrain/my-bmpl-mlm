@@ -13,6 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+ ACTIVE
+ INACTIVE
+}
+
 model Admin {
   id              Int      @id @default(autoincrement()) @map("admin_id")
   firstName       String?  @map("admin_fname") @db.VarChar(50)
@@ -102,14 +107,18 @@ enum AdminType {
 
 
 model Packages {
-  id                 String  @id @default(uuid())
+  id                 String   @id @default(uuid())
   packageName        String
   price              Float
   BV                 Float
   dailyCap           Float
   coinsPerMonth      Float
   packageDescription String
-
+  status             Status   @default(ACTIVE)
+  created_at         DateTime @default(now()) 
+  created_by         String? 
+  updated_at         DateTime @default(now()) 
+  updated_by         String?
 
 
 }
