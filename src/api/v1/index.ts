@@ -1,8 +1,8 @@
 import express, { Router } from "express";
 import health from "./health";
 import authRouter from "./auth";
-import userRouter from "./user";
 import packagerouter from "./Packages/package.routes";
+import userRouter from "./Users/Users.routes";
 
 const v1: Router = express.Router();
 
@@ -12,6 +12,7 @@ v1.use("/auth", authRouter);
 
 //admin protected routes
 v1.use("/package", packagerouter);
-v1.use("/users", userRouter);
+
+v1.use("/user", userRouter);
 
 export default v1;

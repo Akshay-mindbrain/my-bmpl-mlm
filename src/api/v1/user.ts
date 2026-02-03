@@ -7,21 +7,21 @@ import Joi from "joi";
 const router = express.Router();
 
 const userSchema = Joi.object({
-    firstName: Joi.string().max(50),
-    lastName: Joi.string().max(50),
-    email: Joi.string().email().required(),
-    mobile: Joi.string().max(20),
-    username: Joi.string().min(3).max(30).required(),
-    password: Joi.string().min(6).required(),
+  firstName: Joi.string().max(50),
+  lastName: Joi.string().max(50),
+  email: Joi.string().email().required(),
+  mobile: Joi.string().max(20),
+  username: Joi.string().min(3).max(30).required(),
+  password: Joi.string().min(6).required(),
 });
 
 const updateSchema = Joi.object({
-    firstName: Joi.string().max(50),
-    lastName: Joi.string().max(50),
-    email: Joi.string().email(),
-    mobile: Joi.string().max(20),
-    username: Joi.string().min(3).max(30),
-    password: Joi.string().min(6),
+  firstName: Joi.string().max(50),
+  lastName: Joi.string().max(50),
+  email: Joi.string().email(),
+  mobile: Joi.string().max(20),
+  username: Joi.string().min(3).max(30),
+  password: Joi.string().min(6),
 });
 
 router.use(authenticateUser);
