@@ -63,6 +63,8 @@ const updateSchema = Joi.object({
 userRouter.post("/", validateRequest(userSchema), userController.create);
 userRouter.get("/", userController.getAll);
 userRouter.get("/:id", userController.getOne);
+userRouter.get("/:id/downline", userController.getDownline);
+userRouter.get("/:id/upline", userController.getUpline);
 userRouter.put("/:id", validateRequest(updateSchema), userController.update);
 userRouter.delete("/:id", userController.deleteUser);
 

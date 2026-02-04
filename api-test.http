@@ -2,3 +2,5 @@
 
 GET http://localhost:3000/health HTTP/1.1
 
+GET http://localhost:3000/v1/users/6/upline
+GET http://localhost:3000/v1/users/6/downline

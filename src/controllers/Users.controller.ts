@@ -71,3 +71,44 @@ export const deleteUser = async (req: AuthRequest, res: Response, next: NextFunc
         next(error);
     }
 };
+
+//Helper Controller 
+export const getDownline = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = parseInt(req.params.id);
+
+    const users = await userService.getAllDownlineByUserId(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Downline users fetched successfully.",
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUpline = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = parseInt(req.params.id);
+
+    const users = await userService.getAllUpLineByUserId(userId);
+
+    res.status(200).json({
+      success: true,
+      message: "Upline users fetched successfully.",
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

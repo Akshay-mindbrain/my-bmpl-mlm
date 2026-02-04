@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import AppError from "../errors/AppError";
 import * as userRepository from "../data/repositories/Users.Repository";
+import * as userhelperRepository from "../data/repositories/UserHelper.Repository";
 
 export const createUser = async (data: any) => {
   let createdUser = null;
@@ -74,6 +75,7 @@ export const createUser = async (data: any) => {
       childId: createdUser.id,
       legPosition: data.legPosition,
     });
+    //await userhelperRepository.updateAncestorLastNodes(placementParentId,data.legPosition);
   }
 
   return createdUser;
@@ -119,3 +121,33 @@ export const deleteUser = async (id: number) => {
 
   return userRepository.deleteUser(id);
 };
+
+//Helper Services
+export const getAllDownlineByUserId = async (userId: number) => {
+  const user = await userRepository.getUserById(userId);
+
+  if (!user) {
+    throw AppError.notFound(`User with given ${userId} does not exist`);
+  }
+
+  if (!user.lineagePath) {
+    return [];
+  }
+
+  return userhelperRepository.getAllDownline(user.lineagePath);
+};
+
+export const getAllUpLineByUserId = async (userId: number) => {
+  const user = await userRepository.getUserById(userId);
+
+  if (!user) {
+    throw AppError.notFound(`User with given ${userId} does not exist`);
+  }
+
+  if (!user.lineagePath) {
+    return [];
+  }
+
+  return userhelperRepository.getAllUpLine(user.lineagePath);
+};
+
