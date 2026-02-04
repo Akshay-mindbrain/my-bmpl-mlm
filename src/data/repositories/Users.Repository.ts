@@ -146,7 +146,7 @@ export const findPlacementParent = async (
       return current.id;
     }
 
-    const nextId =
+    const nextId: number | null =
       legPosition === "LEFT" ? current.leftChildId : current.rightChildId;
 
     if (!nextId) {

@@ -59,7 +59,7 @@ const updateSchema = Joi.object({
   updatedBy: Joi.string().optional().allow(null),
 });
 
-userRouter.use(authenticateUser);
+// userRouter.use(authenticateUser);
 userRouter.post("/", validateRequest(userSchema), userController.create);
 userRouter.get("/", userController.getAll);
 userRouter.get("/:id", userController.getOne);

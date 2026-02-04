@@ -2,7 +2,6 @@ import bcrypt from "bcryptjs";
 import AppError from "../errors/AppError";
 import * as userRepository from "../data/repositories/Users.Repository";
 
-
 export const createUser = async (data: any) => {
   let createdUser = null;
 

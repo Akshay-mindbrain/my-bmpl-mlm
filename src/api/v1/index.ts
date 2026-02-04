@@ -13,6 +13,6 @@ v1.use("/auth", authRouter);
 //admin protected routes
 v1.use("/package", packagerouter);
 
-v1.use("/user", userRouter);
+v1.use("/users", userRouter);
 
 export default v1;
