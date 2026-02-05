@@ -64,6 +64,7 @@ export const createUser = async (data: any) => {
       parentId: placementParentId,
       lineagePath: "",
     });
+    await userRepository.incrementDirectCount(sponsorUser.id);
 
     await userRepository.createChildLineage({
       userId: createdUser.id,
@@ -149,5 +150,36 @@ export const getAllUpLineByUserId = async (userId: number) => {
   }
 
   return userhelperRepository.getAllUpLine(user.lineagePath);
+};
+
+export const updateLastNodeByLeg = async (
+  userId: number,
+  legPosition: "LEFT" | "RIGHT",
+) => {
+  const immediateChild = await userhelperRepository.getImmediateChild(
+    userId,
+    legPosition,
+  );
+
+  if (!immediateChild) return null;
+
+  const nodes = await userhelperRepository.getLastNode(immediateChild.lineagePath);
+
+  if (!nodes.length) return null;
+
+  let lastNode = nodes[0];
+
+  for (const node of nodes) {
+    const nodeDepth = node.lineagePath.split(",").length;
+    const lastDepth = lastNode.lineagePath.split(",").length;
+
+    if (nodeDepth > lastDepth) {
+      lastNode = node;
+    }
+  }
+
+  const updatenode = await userRepository.updateUser()
+
+  return lastNode;
 };
 

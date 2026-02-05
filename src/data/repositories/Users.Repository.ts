@@ -43,6 +43,17 @@ export const updateUser = async (
   });
 };
 
+export const incrementDirectCount = async (userId: number) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      directCount: {
+        increment: 1,
+      },
+    },
+  });
+};
+
 export const deleteUser = async (id: number): Promise<User> => {
   return prisma.user.delete({
     where: { id },

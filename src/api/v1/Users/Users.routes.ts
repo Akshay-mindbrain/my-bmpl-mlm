@@ -65,6 +65,7 @@ userRouter.get("/", userController.getAll);
 userRouter.get("/:id", userController.getOne);
 userRouter.get("/:id/downline", userController.getDownline);
 userRouter.get("/:id/upline", userController.getUpline);
+userRouter.get("/:userId/last-node-update", userController.getLastNodeByLegController);
 userRouter.put("/:id", validateRequest(updateSchema), userController.update);
 userRouter.delete("/:id", userController.deleteUser);
 

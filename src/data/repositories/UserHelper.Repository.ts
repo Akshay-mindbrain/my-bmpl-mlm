@@ -17,29 +17,12 @@ export const getImmediateChild = async (
   });
 };
 
-export const getLastNode = async (
-  userId: number,
-  legPosition: "LEFT" | "RIGHT",
-): Promise<number | null> => {
-  const immediateChild = await getImmediateChild(userId, legPosition);
-  if (!immediateChild) return null;
-
-  const basePath = immediateChild.lineagePath;
-
-  const lastNode = await prisma.user.findFirst({
-    where: {
-      OR: [
-        { lineagePath: basePath },
-        { lineagePath: { startsWith: basePath + "," } },
-      ],
-    },
-    orderBy: [{ lineagePath: "desc" },{ id: "desc" },],
-    select: {
-      id: true,
-    },
-  });
-
-  return lastNode?.id ?? null;
+export const getLastNode = async (lineagePath: string) => {
+  return prisma.$queryRaw<User[]>`
+    SELECT *
+    FROM "User"
+    WHERE "lineagePath" LIKE ${`${lineagePath}%`}
+  `;
 };
 
 export const getAllDownline = async (lineagePath: string) => {
@@ -57,37 +40,36 @@ export const getAllUpLine = async (lineagePath: string) => {
     `;
 };
 
-export const updateAncestorLastNodes = async (
-  placementParentId: number,
-  legPosition: "LEFT" | "RIGHT",
-) => {
-  // get lineagePath of placement parent
-  const parent = await prisma.user.findUnique({
-    where: { id: placementParentId },
-    select: { lineagePath: true },
-  });
+// export const updateAncestorLastNodes = async (
+//   placementParentId: number,
+//   legPosition: "LEFT" | "RIGHT",
+// ) => {
+//   // get lineagePath of placement parent
+//   const parent = await prisma.user.findUnique({
+//     where: { id: placementParentId },
+//     select: { lineagePath: true },
+//   });
 
-  if (!parent) return;
+//   if (!parent) return;
 
-  // ancestors including parent
-  const ancestorIds = parent.lineagePath
-    .split(",")
-    .map(Number)
-    .filter(Number.isFinite);
+//   // ancestors including parent
+//   const ancestorIds = parent.lineagePath
+//     .split(",")
+//     .map(Number)
+//     .filter(Number.isFinite);
 
-  // update bottom → top
-  for (const ancestorId of ancestorIds.reverse()) {
-    const lastNodeId = await getLastNode(ancestorId, legPosition);
+//   // update bottom → top
+//   for (const ancestorId of ancestorIds.reverse()) {
+//     const lastNodeId = await getLastNode(ancestorId, legPosition);
 
-    await prisma.user.update({
-      where: { id: ancestorId },
-      data: {
-        lastLeftId:
-          legPosition === "LEFT" ? lastNodeId : undefined,
-        lastRightId:
-          legPosition === "RIGHT" ? lastNodeId : undefined,
-      },
-    });
-  }
-};
-
+//     await prisma.user.update({
+//       where: { id: ancestorId },
+//       data: {
+//         lastLeftId:
+//  legPosition === "LEFT" ? lastNodeId : undefined,
+//         lastRightId:
+//  legPosition === "RIGHT" ? lastNodeId : undefined,
+//       },
+//     });
+//   }
+// };
