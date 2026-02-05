@@ -82,6 +82,8 @@ model User {
   kycStatus     KycStatus   @default(PENDING)
   status        Status      @default(ACTIVE)
 
+  refresh_token String? 
+
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   createdBy     String?

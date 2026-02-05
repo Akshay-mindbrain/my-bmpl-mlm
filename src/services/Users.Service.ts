@@ -4,82 +4,90 @@ import * as userRepository from "../data/repositories/Users.Repository";
 import * as userhelperRepository from "../data/repositories/UserHelper.Repository";
 
 export const createUser = async (data: any) => {
-  let createdUser = null;
+  return userRepository.runInTransaction(async (tx) => {
+    let createdUser = null;
 
-  const existingEmail = await userRepository.getUserByEmail(data.email);
-  if (existingEmail) {
-    throw AppError.conflict("Email already exists.");
-  }
+    const existingEmail = await userRepository.getUserByEmail(data.email, tx);
+    if (existingEmail) throw AppError.conflict("Email already exists.");
 
-  const existingMobile = await userRepository.getUserByMobile(data.mobile);
-  if (existingMobile) {
-    throw AppError.conflict("Mobile number already exists.");
-  }
-
-  const totalUsers = await userRepository.countUsers();
-  const hashedPassword = await bcrypt.hash(data.password, 10);
-
-  if (totalUsers === 0) {
-    if (data.legPosition !== null && data.legPosition !== undefined) {
-      throw AppError.badRequest("Root user cannot have a leg position.");
-    }
-
-    createdUser = await userRepository.createUser({
-      ...data,
-      password: hashedPassword,
-      createdBy: "SYSTEM",
-      lineagePath: "",
-    });
-
-    await userRepository.createRootLineage(createdUser.id);
-  }
-
-  if (totalUsers > 0) {
-    if (!data.sponsorId) {
-      throw AppError.badRequest("sponsorId is required.");
-    }
-
-    if (!data.legPosition) {
-      throw AppError.badRequest("legPosition is required.");
-    }
-
-    const sponsorUser = await userRepository.getUserById(data.sponsorId);
-    if (!sponsorUser) {
-      throw AppError.notFound("Sponsor user not found.");
-    }
-
-    const placementParentId = await userRepository.findPlacementParent(
-      sponsorUser.id,
-      data.legPosition,
+    const existingMobile = await userRepository.getUserByMobile(
+      data.mobile,
+      tx,
     );
+    if (existingMobile)
+      throw AppError.conflict("Mobile number already exists.");
 
-    if (!placementParentId) {
-      throw AppError.badRequest("Unable to find placement parent.");
+    const totalUsers = await userRepository.countUsers(tx);
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    if (totalUsers === 0) {
+      if (data.legPosition !== null && data.legPosition !== undefined) {
+        throw AppError.badRequest("Root user cannot have a leg position.");
+      }
+
+      createdUser = await userRepository.createUser(
+        {
+          ...data,
+          password: hashedPassword,
+          createdBy: "SYSTEM",
+          lineagePath: "",
+        },
+        tx,
+      );
+
+      await userRepository.createRootLineage(createdUser.id, tx);
     }
 
-    createdUser = await userRepository.createUser({
-      ...data,
-      password: hashedPassword,
-      sponsorId: sponsorUser.id,
-      parentId: placementParentId,
-      lineagePath: "",
-    });
-    await userRepository.incrementDirectCount(sponsorUser.id);
+    if (totalUsers > 0) {
+      if (!data.sponsorId) throw AppError.badRequest("sponsorId is required.");
+      if (!data.legPosition) throw AppError.badRequest("legPosition is required.");
 
-    await userRepository.createChildLineage({
-      userId: createdUser.id,
-      parentId: placementParentId,
-    });
+      const sponsorUser = await userRepository.getUserById(data.sponsorId, tx);
+      if (!sponsorUser) throw AppError.notFound("Sponsor user not found.");
 
-    await userRepository.updateParentChildPointer({
-      parentId: placementParentId,
-      childId: createdUser.id,
-      legPosition: data.legPosition,
-    });
-    //await userhelperRepository.updateAncestorLastNodes(placementParentId,data.legPosition);
-  }
+      const placementParentId = await userRepository.findPlacementParent(
+        sponsorUser.id,
+        data.legPosition,
+        tx
+      );
 
-  return createdUser;
+      if (!placementParentId) {
+        throw AppError.badRequest("Unable to find placement parent.");
+      }
+
+      createdUser = await userRepository.createUser(
+        {
+          ...data,
+          password: hashedPassword,
+          sponsorId: sponsorUser.id,
+          parentId: placementParentId,
+          lineagePath: "",
+        },
+        tx,
+      );
+
+      await userRepository.incrementDirectCount(sponsorUser.id, tx);
+
+      await userRepository.createChildLineage(
+        {
+          userId: createdUser.id,
+          parentId: placementParentId,
+        },
+        tx,
+      );
+
+      await userRepository.updateParentChildPointer(
+        {
+          parentId: placementParentId,
+          childId: createdUser.id,
+          legPosition: data.legPosition,
+        },
+        tx,
+      );
+    }
+
+    return createdUser;
+  });
 };
 
 export const getAllUsers = async () => {
@@ -163,7 +171,9 @@ export const updateLastNodeByLeg = async (
 
   if (!immediateChild) return null;
 
-  const nodes = await userhelperRepository.getLastNode(immediateChild.lineagePath);
+  const nodes = await userhelperRepository.getLastNode(
+    immediateChild.lineagePath,
+  );
 
   if (!nodes.length) return null;
 
@@ -178,8 +188,13 @@ export const updateLastNodeByLeg = async (
     }
   }
 
-  const updatenode = await userRepository.updateUser()
+  await userRepository.updateUser(userId, {
+    lastLeft:
+      legPosition === "LEFT" ? { connect: { id: lastNode.id } } : undefined,
+
+    lastRight:
+      legPosition === "RIGHT" ? { connect: { id: lastNode.id } } : undefined,
+  });
 
   return lastNode;
 };
-

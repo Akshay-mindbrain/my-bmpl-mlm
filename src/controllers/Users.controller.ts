@@ -1,4 +1,4 @@
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import * as userService from "../services/Users.Service";
 import { AuthRequest } from "../middleware/authenticate-user";
 
@@ -115,35 +115,37 @@ export const getUpline = async (
 
 export const getLastNodeByLegController = async (
   req: Request,
-  res: Response,
-) => {
+  res: Response
+): Promise<void> => {
   try {
     const userId = Number(req.params.userId);
-    const legPosition = req.params.legPosition as "LEFT" | "RIGHT";
+    const legPosition = req.body.legPosition as "LEFT" | "RIGHT";
 
     if (!userId || !["LEFT", "RIGHT"].includes(legPosition)) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Invalid userId or legPosition",
       });
+      return;
     }
 
-    const lastNode = await userService.getLastNodeByLeg(userId, legPosition);
+    const lastNode = await userService.updateLastNodeByLeg(userId, legPosition);
 
     if (!lastNode) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "No node found for given leg",
       });
+      return;
     }
 
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       data: lastNode,
     });
   } catch (error) {
     console.error("getLastNodeByLeg error:", error);
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Internal server error",
     });
