@@ -20,8 +20,8 @@ export const getImmediateChild = async (
 export const getLastNode = async (lineagePath: string) => {
   return prisma.$queryRaw<User[]>`
     SELECT *
-    FROM "User"
-    WHERE "lineagePath" LIKE ${`${lineagePath}%`}
+    FROM users
+    WHERE lineagePath LIKE ${`${lineagePath}%`}
   `;
 };
 
