@@ -10,26 +10,25 @@ function capitalize(word: string) {
 const userIds = ["google-oauth2|100541667735869923759"];
 
 async function main() {
-  for (const userId of userIds) {
-    const createdProject = await prisma.project.create({
-      data: {
-        user_id: userId,
-        name: capitalize(faker.word.noun()),
-      },
-    });
-
-    for (let i = 1; i <= 2; i++) {
-      await prisma.task.create({
-        data: {
-          user_id: userId,
-          project_id: i % 2 === 0 ? createdProject.id : null,
-          name: `${capitalize(faker.word.verb())} ${faker.word.noun()}`,
-          description: faker.lorem.sentence(),
-          due_date: faker.date.future(),
-        },
-      });
-    }
-  }
+  // for (const userId of userIds) {
+  //   const createdProject = await prisma.project.create({
+  //     data: {
+  //       user_id: userId,
+  //       name: capitalize(faker.word.noun()),
+  //     },
+  //   });
+  //   for (let i = 1; i <= 2; i++) {
+  //     await prisma.task.create({
+  //       data: {
+  //         user_id: userId,
+  //         project_id: i % 2 === 0 ? createdProject.id : null,
+  //         name: `${capitalize(faker.word.verb())} ${faker.word.noun()}`,
+  //         description: faker.lorem.sentence(),
+  //         due_date: faker.date.future(),
+  //       },
+  //     });
+  //   }
+  // }
 }
 
 main()
