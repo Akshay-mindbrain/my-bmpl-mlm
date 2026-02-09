@@ -1,5 +1,5 @@
 import { Response, NextFunction, Request } from "express";
-import * as authService from "../services/AuthService";
+import * as authService from "../useCase/AuthService";
 import { AuthRequest } from "../middleware/authenticate-user";
 import AppError from "../errors/AppError";
 

@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import * as PackageService from "../services/Package.Service";
+import * as PackageService from "../useCase/Package.Service";
 
 export const createPackageController = async (
   req: Request,

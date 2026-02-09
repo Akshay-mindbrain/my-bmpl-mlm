@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import * as userService from "../services/Users.Service";
+import * as userService from "../useCase/Users.Service";
 import { AuthRequest } from "../middleware/authenticate-user";
 
 export const create = async (

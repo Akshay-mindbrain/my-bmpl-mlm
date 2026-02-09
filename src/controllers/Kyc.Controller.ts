@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import * as KycService from "../services/Kyc.Service";
+import * as KycService from "../useCase/Kyc.Service";
 
 export const createKycController = async (
   req: Request,
