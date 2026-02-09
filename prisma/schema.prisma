@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////
+// ADMIN MODEL
+//////////////////////
+
+model Admin {
+  id           Int       @id @default(autoincrement()) @map("admin_id")
+  firstName    String?   @map("admin_fname") @db.VarChar(50)
+  lastName     String?   @map("admin_lname") @db.VarChar(50)
+  mobileOne    String?   @map("mob_one") @db.VarChar(20)
+  mobileTwo    String?   @map("mob_two") @db.VarChar(20)
+  email        String?   @unique @map("email_id") @db.VarChar(100)
+  pinCode      String?   @map("pinno") @db.VarChar(20)
+  country      String?   @map("country_name") @db.VarChar(100)
+  state        String?   @map("state_name") @db.VarChar(100)
+  address      String?   @db.Text
+  username     String    @unique @map("admin_username") @db.VarChar(30)
+  password     String    @map("admin_password") @db.VarChar(255)
+  profileImage String?   @map("profile_img") @db.Text
+  adminType    AdminType @map("admin_type")
+  accessToken  String?   @map("access_token") @db.Text
+  refreshToken String?   @map("refresh_token") @db.Text
+  status       String    @default("1") @db.VarChar(1)
+  createdAt    DateTime  @default(now()) @map("insert_date")
+  createdBy    String?   @map("insert_user") @db.VarChar(50)
+  updatedAt    DateTime  @updatedAt @map("update_date")
+  updatedBy    String?   @map("update_user") @db.VarChar(50)
+
+  // Relations
+  loginHistory   AdminLoginHistory[]
+  users          User[]
+  userActivities UserActivityLog[]
+
+  @@map("aa_0_admin_db")
+}
+
+//////////////////////
+// USER MODEL
+//////////////////////
+
+model User {
+  id         Int     @id @default(autoincrement())
+  first_name String
+  last_name  String
+  mobile     String  @unique
+  email      String?
+  password   String
+
+  sponsorId   Int?
+  parentId    Int?
+  legPosition LegPosition?
+
+  leftChildId  Int?
+  rightChildId Int?
+  lastLeftId   Int?
+  lastRightId  Int?
+  
+
+  lineagePath String? @db.VarChar(255)
+  directCount Int     @default(0)
+
+  kycStatus KycStatus  @default(PENDING)
+  status    UserStatus @default(ACTIVE)
+
+  refresh_token String? @db.Text
+
+  // Relation with Admin
+  adminId Int?
+  admin   Admin? @relation(fields: [adminId], references: [id])
+
+  // Relation with activity logs
+  activityLogs UserActivityLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  @@index([lineagePath])
+}
+
+//////////////////////
+// USER ACTIVITY LOG
+//////////////////////
+
+model UserActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  adminId   Int      @map("admin_id")
+  action    String   @db.VarChar(50)
+  details   String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  admin Admin @relation(fields: [adminId], references: [id])
+
+  @@map("user_activity_logs")
+}
+
+//////////////////////
+// ADMIN LOGIN HISTORY
+//////////////////////
+
+model AdminLoginHistory {
+  id         Int       @id @default(autoincrement())
+  adminId    Int
+  ipAddress  String?
+  userAgent  String?
+  loginTime  DateTime  @default(now())
+  logoutTime DateTime? @map("logout_time")
+
+  admin Admin @relation(fields: [adminId], references: [id])
+
+  @@map("admin_login_history")
+}
+
+//////////////////////
+// ENUMS
+//////////////////////
+
+enum LegPosition {
+  LEFT
+  RIGHT
+}
+
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AdminType {
+  SUPERADMIN
+  ADMIN
+  MANAGER
+}
