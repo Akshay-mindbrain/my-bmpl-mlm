@@ -1,13 +1,9 @@
 import prisma from "../../prisma-client";
 import { Packages, Prisma } from "@prisma/client";
 
-
-export const createPackage = async (
-  data:any
-): Promise<Packages> => {
+export const createPackage = async (data: any): Promise<Packages> => {
   return prisma.packages.create({ data });
 };
-
 
 export const getAllPackages = async (): Promise<Packages[]> => {
   return prisma.packages.findMany({
@@ -15,19 +11,15 @@ export const getAllPackages = async (): Promise<Packages[]> => {
   });
 };
 
-
-export const getPackageById = async (
-  id: string
-): Promise<Packages | null> => {
+export const getPackageById = async (id: string): Promise<Packages | null> => {
   return prisma.packages.findUnique({
     where: { id },
   });
 };
 
-
 export const updatePackage = async (
   id: string,
-  data: any
+  data: any,
 ): Promise<Packages> => {
   return prisma.packages.update({
     where: { id },
@@ -35,10 +27,7 @@ export const updatePackage = async (
   });
 };
 
-
-export const deletePackage = async (
-  id: string
-): Promise<Packages> => {
+export const deletePackage = async (id: string): Promise<Packages> => {
   return prisma.packages.delete({
     where: { id },
   });

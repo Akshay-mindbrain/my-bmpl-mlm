@@ -98,18 +98,3 @@ enum AdminType {
   ADMIN
   MANAGER
 }
-
-
-
-model Packages {
-  id                 String  @id @default(uuid())
-  packageName        String
-  price              Float
-  BV                 Float
-  dailyCap           Float
-  coinsPerMonth      Float
-  packageDescription String
-
-
-
-}

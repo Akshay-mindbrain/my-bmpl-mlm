@@ -59,8 +59,6 @@
     "cors": "^2.8.5",
     "express": "^5.0.1",
     "express-oauth2-jwt-bearer": "^1.6.1",
-    "express-rate-limit": "^8.2.1",
-    "helmet": "^8.1.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
@@ -70,6 +68,9 @@
     "reflect-metadata": "^0.2.2",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "_moduleAliases": {
     "@": "./dist",

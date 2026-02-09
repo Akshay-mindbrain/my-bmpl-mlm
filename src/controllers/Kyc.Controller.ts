@@ -1,17 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import * as PackageService from "../useCase/Package.Service";
+import * as KycService from "../useCase/Kyc.Service";
 
-export const createPackageController = async (
+export const createKycController = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const result = await PackageService.createPackage(req.body);
+    const result = await KycService.createKyc(req.body);
 
     res.status(201).json({
       success: true,
-      message: "Package created successfully",
+      message: "KYC record created successfully",
       data: result,
     });
   } catch (error) {
@@ -19,13 +19,13 @@ export const createPackageController = async (
   }
 };
 
-export const getAllPackagesController = async (
+export const getAllKycController = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const result = await PackageService.getAllPackages();
+    const result = await KycService.getAllKyc();
 
     res.status(200).json({
       success: true,
@@ -36,7 +36,7 @@ export const getAllPackagesController = async (
   }
 };
 
-export const getPackageByIdController = async (
+export const getKycByIdController = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -44,7 +44,7 @@ export const getPackageByIdController = async (
   try {
     const { id } = req.params;
 
-    const result = await PackageService.getPackageById(id);
+    const result = await KycService.getKycById(Number(id));
 
     res.status(200).json({
       success: true,
@@ -55,19 +55,18 @@ export const getPackageByIdController = async (
   }
 };
 
-export const updatePackageController = async (
+export const getKycByUserIdController = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
   try {
-    const { id } = req.params;
+    const { userId } = req.params;
 
-    const result = await PackageService.updatePackage(id, req.body);
+    const result = await KycService.getKycByUserId(Number(userId));
 
     res.status(200).json({
       success: true,
-      message: "Package updated successfully",
       data: result,
     });
   } catch (error) {
@@ -75,7 +74,7 @@ export const updatePackageController = async (
   }
 };
 
-export const deletePackageController = async (
+export const updateKycController = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -83,7 +82,27 @@ export const deletePackageController = async (
   try {
     const { id } = req.params;
 
-    const result = await PackageService.deletePackage(id);
+    const result = await KycService.updateKyc(Number(id), req.body);
+
+    res.status(200).json({
+      success: true,
+      message: "KYC record updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteKycController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { id } = req.params;
+
+    const result = await KycService.deleteKyc(Number(id));
 
     res.status(200).json({
       success: true,
