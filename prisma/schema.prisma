@@ -52,8 +52,8 @@ model Admin {
   updatedBy       String?  @map("update_user") @db.VarChar(50)
 
   loginHistory    AdminLoginHistory[]
-  users           User[]
-  userActivities  UserActivityLog[]
+  //users           User[]
+  //userActivities  UserActivityLog[]
 
   @@map("aa_0_admin_db")
 }
@@ -160,7 +160,7 @@ model UserActivityLog {
   createdAt   DateTime @default(now()) @map("created_at")
 
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  admin       Admin    @relation(fields: [adminId], references: [id])
+  //admin       Admin    @relation(fields: [adminId], references: [id])
 
   @@map("user_activity_logs")
 }

@@ -18,6 +18,7 @@ export const createServer = () => {
     res.json({ ok: true, environment: config.env });
   });
 
+  console.log("Main app is being hit");
   app.use("/v1", v1);
 
   app.use(errorHandler);

@@ -92,6 +92,7 @@ export const createUser = async (data: any) => {
 };
 
 export const getAllUsers = async () => {
+  console.log("Api is being hit in the Services")
   return userRepository.getUsers();
 };
 

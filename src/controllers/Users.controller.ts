@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import * as userService from "../useCase/Users.Service";
 import { AuthRequest } from "../middleware/authenticate-user";
+import logger from "@/logger";
+
 
 export const create = async (
   req: AuthRequest,
@@ -25,9 +27,10 @@ export const getAll = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+  console.log("Controll Reached in the getAll controller ");
   try {
     const users = await userService.getAllUsers();
-
+    logger.info(users);
     res.status(200).json({
       success: true,
       data: users,
