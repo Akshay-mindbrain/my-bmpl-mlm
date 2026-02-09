@@ -116,7 +116,7 @@ model User {
  
   userActivities UserActivityLog[]
 
-  kyc Kyc?
+  kyc Kyc?       @relation("UserKyc")
 
   @@index([lineagePath])
   @@map("users")
@@ -146,7 +146,7 @@ model Kyc {
   createdBy         String?
   updatedBy         String?
 
-  user              User      @relation(fields: [userId], references: [id])
+  user              User      @relation("UserKyc", fields: [userId], references: [id])
 
   @@map("kyc")
 }

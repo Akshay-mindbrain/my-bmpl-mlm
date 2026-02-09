@@ -40,7 +40,8 @@ export const createUser = async (data: any) => {
 
     if (totalUsers > 0) {
       if (!data.sponsorId) throw AppError.badRequest("sponsorId is required.");
-      if (!data.legPosition) throw AppError.badRequest("legPosition is required.");
+      if (!data.legPosition)
+        throw AppError.badRequest("legPosition is required.");
 
       const sponsorUser = await userRepository.getUserById(data.sponsorId, tx);
       if (!sponsorUser) throw AppError.notFound("Sponsor user not found.");
@@ -48,7 +49,7 @@ export const createUser = async (data: any) => {
       const placementParentId = await userRepository.findPlacementParent(
         sponsorUser.id,
         data.legPosition,
-        tx
+        tx,
       );
 
       if (!placementParentId) {

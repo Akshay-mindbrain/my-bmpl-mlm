@@ -2,10 +2,7 @@ import AppError from "../errors/AppError";
 import * as PackageRepository from "../data/repositories/Package.Repository";
 import { Packages } from "@prisma/client";
 
-// CREATE
-export const createPackage = async (
-  data: any
-): Promise<Packages> => {
+export const createPackage = async (data: any): Promise<Packages> => {
   if (!data?.packageName || !data?.price) {
     throw AppError.badRequest("Missing required fields");
   }
@@ -13,15 +10,11 @@ export const createPackage = async (
   return PackageRepository.createPackage(data);
 };
 
-// GET ALL
 export const getAllPackages = async (): Promise<Packages[]> => {
   return PackageRepository.getAllPackages();
 };
 
-// GET BY ID
-export const getPackageById = async (
-  id: string
-): Promise<Packages> => {
+export const getPackageById = async (id: string): Promise<Packages> => {
   const pkg = await PackageRepository.getPackageById(id);
 
   if (!pkg) {
@@ -31,10 +24,9 @@ export const getPackageById = async (
   return pkg;
 };
 
-// UPDATE
 export const updatePackage = async (
   id: string,
-  data: any
+  data: any,
 ): Promise<Packages> => {
   const existing = await PackageRepository.getPackageById(id);
 
@@ -45,9 +37,8 @@ export const updatePackage = async (
   return PackageRepository.updatePackage(id, data);
 };
 
-// DELETE
 export const deletePackage = async (
-  id: string
+  id: string,
 ): Promise<{ message: string }> => {
   const existing = await PackageRepository.getPackageById(id);
 

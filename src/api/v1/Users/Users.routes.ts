@@ -24,16 +24,18 @@ const userSchema = Joi.object({
 
   legPosition: Joi.string().valid("LEFT", "RIGHT").optional().allow(null),
 
-//   leftChildId: Joi.number().integer().positive().optional().allow(null),
-//   rightChildId: Joi.number().integer().positive().optional().allow(null),
-//   lastLeftId: Joi.number().integer().positive().optional().allow(null),
-//   lastRightId: Joi.number().integer().positive().optional().allow(null),
+  //   leftChildId: Joi.number().integer().positive().optional().allow(null),
+  //   rightChildId: Joi.number().integer().positive().optional().allow(null),
+  //   lastLeftId: Joi.number().integer().positive().optional().allow(null),
+  //   lastRightId: Joi.number().integer().positive().optional().allow(null),
 
-//   lineagePath: Joi.string().max(255).optional(),
+  //   lineagePath: Joi.string().max(255).optional(),
 
   directCount: Joi.number().integer().min(0).default(0),
 
-  kycStatus: Joi.string().valid("PENDING", "APPROVED", "REJECT").default("PENDING"),
+  kycStatus: Joi.string()
+    .valid("PENDING", "APPROVED", "REJECT")
+    .default("PENDING"),
 
   status: Joi.string().valid("ACTIVE", "INACTIVE").default("ACTIVE"),
 
@@ -52,7 +54,9 @@ const updateSchema = Joi.object({
 
   email: Joi.string().email().required(),
 
-  kycStatus: Joi.string().valid("PENDING", "APPROVED", "REJECT").default("PENDING"),
+  kycStatus: Joi.string()
+    .valid("PENDING", "APPROVED", "REJECT")
+    .default("PENDING"),
 
   status: Joi.string().valid("ACTIVE", "INACTIVE").default("ACTIVE"),
 
@@ -65,7 +69,10 @@ userRouter.get("/", userController.getAll);
 userRouter.get("/:id", userController.getOne);
 userRouter.get("/:id/downline", userController.getDownline);
 userRouter.get("/:id/upline", userController.getUpline);
-userRouter.get("/:userId/last-node-update", userController.getLastNodeByLegController); //leg position should be provided in body
+userRouter.get(
+  "/:userId/last-node-update",
+  userController.getLastNodeByLegController,
+); //leg position should be provided in body
 userRouter.put("/:id", validateRequest(updateSchema), userController.update);
 userRouter.delete("/:id", userController.deleteUser);
 

@@ -4,7 +4,8 @@ import { User, Prisma } from "@prisma/client";
 type DB = Prisma.TransactionClient | typeof prisma;
 
 export const runInTransaction = async <T>(
-  callback: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> => {
+  callback: (tx: Prisma.TransactionClient) => Promise<T>,
+): Promise<T> => {
   return prisma.$transaction(async (tx) => {
     return callback(tx);
   });
@@ -136,7 +137,11 @@ export const findPlacementParent = async (
 };
 
 export const updateParentChildPointer = async (
-  { parentId, childId, legPosition }: {
+  {
+    parentId,
+    childId,
+    legPosition,
+  }: {
     parentId: number;
     childId: number;
     legPosition: "LEFT" | "RIGHT";
