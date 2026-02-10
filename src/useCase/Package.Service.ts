@@ -1,13 +1,27 @@
 import AppError from "../errors/AppError";
 import * as PackageRepository from "../data/repositories/Package.Repository";
 import { Packages } from "@prisma/client";
+import * as adminRepository from "../data/repositories/AuthRepository"
 
 export const createPackage = async (data: any): Promise<Packages> => {
   if (!data?.packageName || !data?.price) {
     throw AppError.badRequest("Missing required fields");
   }
+   const admin = await adminRepository.getAdmin();
+  if (!admin) {
+    throw AppError.notFound("Admin not found");
+  }
 
-  return PackageRepository.createPackage(data);
+  const adminName = `${admin.firstName ?? ""} ${admin.lastName ?? ""}`.trim();
+
+
+  return PackageRepository.createPackage({
+    ...data,
+    createdBy: adminName,
+    updatedBy: adminName,
+    createdByAdmin: { connect: { id: admin.id } },
+    updatedByAdmin: { connect: { id: admin.id } },
+  });
 };
 
 export const getAllPackages = async (): Promise<Packages[]> => {
@@ -34,7 +48,20 @@ export const updatePackage = async (
     throw AppError.notFound("Package not found");
   }
 
-  return PackageRepository.updatePackage(id, data);
+  const admin = await adminRepository.getAdmin();
+  if (!admin) {
+    throw AppError.notFound("Admin not found");
+  }
+
+  const adminName = `${admin.firstName ?? ""} ${admin.lastName ?? ""}`.trim();
+
+  return PackageRepository.updatePackage(id, {
+    ...data,
+    updatedBy: adminName,
+    updatedByAdmin: {
+      connect: { id: admin.id },
+    },
+  });
 };
 
 export const deletePackage = async (

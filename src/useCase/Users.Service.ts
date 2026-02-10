@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import AppError from "../errors/AppError";
 import * as userRepository from "../data/repositories/Users.Repository";
 import * as userhelperRepository from "../data/repositories/UserHelper.Repository";
+import * as adminRepository from "../data/repositories/AuthRepository";
 
 export const createUser = async (data: any) => {
   return userRepository.runInTransaction(async (tx) => {
@@ -19,6 +20,11 @@ export const createUser = async (data: any) => {
 
     const totalUsers = await userRepository.countUsers(tx);
     const hashedPassword = await bcrypt.hash(data.password, 10);
+    const admin = await adminRepository.getAdmin();
+    if (!admin) {
+      throw AppError.notFound("Admin not found");
+    }
+    const adminName = `${admin.firstName ?? ""} ${admin.lastName ?? ""}`.trim();
 
     if (totalUsers === 0) {
       if (data.legPosition !== null && data.legPosition !== undefined) {
@@ -29,7 +35,14 @@ export const createUser = async (data: any) => {
         {
           ...data,
           password: hashedPassword,
-          createdBy: "SYSTEM",
+          createdBy: adminName,
+          updatedBy: adminName,
+          createdByAdmin: {
+            connect: { id: admin.id },
+          },
+          updatedByAdmin: {
+            connect: { id: admin.id },
+          },
           lineagePath: "",
         },
         tx,
@@ -62,6 +75,14 @@ export const createUser = async (data: any) => {
           password: hashedPassword,
           sponsorId: sponsorUser.id,
           parentId: placementParentId,
+          createdBy: adminName,
+          updatedBy: adminName,
+          createdByAdmin: {
+            connect: { id: admin.id },
+          },
+          updatedByAdmin: {
+            connect: { id: admin.id },
+          },
           lineagePath: "",
         },
         tx,
@@ -117,9 +138,19 @@ export const updateUser = async (id: number, data: any) => {
     throw AppError.notAcceptable("password cannot be updated");
   }
 
+  const admin = await adminRepository.getAdmin();
+  if (!admin) {
+    throw AppError.notFound("Admin not found");
+  }
+
+  const adminName = `${admin.firstName ?? ""} ${admin.lastName ?? ""}`.trim();
+
   return userRepository.updateUser(id, {
     ...data,
-    updatedBy: isExist.id,
+    updatedBy: adminName,
+    updatedByAdmin: {
+      connect: { id: admin.id },
+    },
   });
 };
 

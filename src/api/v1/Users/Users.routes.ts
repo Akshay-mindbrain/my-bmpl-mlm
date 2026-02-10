@@ -8,7 +8,7 @@ import { userCreateSchema, userUpdateSchema } from "@/data/request-schemas";
 const userRouter = express.Router();
 // userRouter.use(authenticateUser);
 
-console.log("Api is being hit in routes");
+// console.log("Api is being hit in routes");
 userRouter.post("/", validateRequest(userCreateSchema), userController.create);
 userRouter.get("/", userController.getAll);
 userRouter.get("/:id", userController.getOne);
