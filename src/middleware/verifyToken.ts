@@ -5,7 +5,7 @@ export interface MyJwtPayload extends JwtPayload {
   Id: number;
 }
 
-export const verifyUser = (
+export const verifyAdmin = (
   req: Request,
   res: Response,
   next: NextFunction,

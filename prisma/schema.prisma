@@ -40,24 +40,24 @@ enum AdminType {
 model Admin {
   id           Int       @id @default(autoincrement()) @map("admin_id")
   firstName    String?   @map("admin_fname")
-  email String? @unique
-  mobile String  @unique
+  email        String?   @unique
+  mobile       String    @unique
   lastName     String?   @map("admin_lname")
-  username     String    @unique @map("admin_username")
+  username     String?   @unique @map("admin_username")
   password     String    @map("admin_password")
-  adminType    AdminType @map("admin_type")
- // accessToken  String?   @map("access_token")
+
+  adminType    AdminType @default(SUPERADMIN) @map("admin_type")
+
   refreshToken String?   @map("refresh_token")
   status       String    @default("1")
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
- // users          User[]
- // userActivities UserActivityLog[]
-  loginHistory   AdminLoginHistory[]
+  loginHistory AdminLoginHistory[]
 
   @@map("aa_0_admin_db")
 }
+
 
 //////////////////////////////////////////////////////
 // USER MODEL (MLM STRUCTURE)

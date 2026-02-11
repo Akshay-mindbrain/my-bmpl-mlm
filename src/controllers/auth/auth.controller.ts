@@ -7,22 +7,27 @@ export const loginController = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const { mobile, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!mobile || !password) {
+    if (!username || !password) {
       res.status(400).json({
         msg: "Required all fields",
       });
       return;
     }
-    const { acessToken, refreshToken } = await loginServices(mobile, password);
-    res.cookie("accessToken", acessToken, {
+    const { accessToken, refreshToken } = await loginServices(
+      username,
+      password,
+    );
+    res.cookie("accessToken", accessToken, {
       httpOnly: true,
+      maxAge: 15 * 60 * 1000,
       sameSite: "strict",
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       sameSite: "strict",
     });
 

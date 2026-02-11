@@ -5,8 +5,11 @@ export const findByMobile = async (mobile: string) => {
     where: { mobile },
   });
 };
-
 export const findById = async (id: number) => {
+  if (!id) {
+    throw new Error("Admin ID is required");
+  }
+
   return prisma.admin.findUnique({
     where: { id },
   });

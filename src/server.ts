@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import config from "./config";
 import v1 from "./api/v1";
-import errorHandler from "./middleware/error-handler";
 import morganMiddleware from "./middleware/morgan-middleware";
 import cookieParser from "cookie-parser";
 
@@ -21,8 +20,6 @@ export const createServer = () => {
   });
 
   app.use("/v1", v1);
-
-  app.use(errorHandler);
 
   return app;
 };

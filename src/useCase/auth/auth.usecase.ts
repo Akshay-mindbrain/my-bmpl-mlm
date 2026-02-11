@@ -12,36 +12,47 @@ import { MyJwtPayload } from "@/middleware/verifyToken";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-export const loginServices = async (mobile: string, password: string) => {
-  const Admin = await findByMobile(mobile);
-  if (!Admin) throw new Error("User not found");
-  const isPassword = await bcrypt.compare(password, Admin.password);
-  if (!isPassword) throw new Error("User not found");
-  const acessToken = generateAccessToken(Admin.id);
-  const refreshToken = generateRefreshToken(Admin.id);
-  await storeRefreshToken(Admin.id, refreshToken);
+export const loginServices = async (username: string, password: string) => {
+  const existAdmin = await findByMobile(username);
+  if (!existAdmin) {
+    throw new Error("user not found");
+  }
+  const isPassword = await bcrypt.compare(password, existAdmin.password);
+  if (!isPassword) {
+    throw new Error("credentioal is not match");
+  }
+  const accessToken = await generateAccessToken(existAdmin.id);
+  const refreshToken = await generateRefreshToken(existAdmin.id);
+  await storeRefreshToken(existAdmin.id, refreshToken);
   return {
-    acessToken,
+    accessToken,
     refreshToken,
   };
 };
 
 export const genAcessServices = async (refreshToken: string) => {
-  const decoded = jwt.verify(
-    refreshToken,
-    process.env.JWT_REFRESH_SECRET as string,
-  );
+  try {
+    const decoded: any = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET as string,
+    );
 
-  if (typeof decoded === "string") {
-    throw new Error("Invalid token");
+    if (!decoded?.id) {
+      throw new Error("Invalid token");
+    }
+
+    const admin = await findById(decoded.id);
+
+    if (!admin) {
+      throw new Error("Admin not found");
+    }
+
+    if (admin.refreshToken !== refreshToken) {
+      throw new Error("Invalid refresh token");
+    }
+
+    return generateAccessToken(admin.id);
+  } catch (error) {
+    throw new Error("Invalid or expired refresh token");
   }
-
-  const payload = decoded as MyJwtPayload;
-
-  const admin = await findById(payload.adminId);
-
-  if (!admin || admin.refreshToken !== refreshToken) {
-    throw new Error("Invalid refresh token");
-  }
-  return generateAccessToken(admin.id);
 };

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `aa_0_admin_db` MODIFY `admin_type` ENUM('SUPERADMIN', 'ADMIN', 'MANAGER') NOT NULL DEFAULT 'SUPERADMIN';
