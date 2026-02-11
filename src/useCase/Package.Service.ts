@@ -1,13 +1,15 @@
+//This is Plan_master Services [if required change the naming of this service in future]
 import AppError from "../errors/AppError";
 import * as PackageRepository from "../data/repositories/Package.Repository";
-import { Packages } from "@prisma/client";
+import { PlansMaster } from "@prisma/client";
 import * as adminRepository from "../data/repositories/AuthRepository"
 
-export const createPackage = async (data: any): Promise<Packages> => {
-  if (!data?.packageName || !data?.price) {
+export const createPackage = async (data: any): Promise<PlansMaster> => {
+  console.log("Service layer is being hit ");
+  if (!data?.planName || !data?.price) {
     throw AppError.badRequest("Missing required fields");
   }
-   const admin = await adminRepository.getAdmin();
+  const admin = await adminRepository.getAdmin();
   if (!admin) {
     throw AppError.notFound("Admin not found");
   }
@@ -24,11 +26,11 @@ export const createPackage = async (data: any): Promise<Packages> => {
   });
 };
 
-export const getAllPackages = async (): Promise<Packages[]> => {
-  return PackageRepository.getAllPackages();
+export const getAllPlansMaster = async (): Promise<PlansMaster[]> => {
+  return PackageRepository.getAllPlansMaster();
 };
 
-export const getPackageById = async (id: string): Promise<Packages> => {
+export const getPackageById = async (id: string): Promise<PlansMaster> => {
   const pkg = await PackageRepository.getPackageById(id);
 
   if (!pkg) {
@@ -41,7 +43,7 @@ export const getPackageById = async (id: string): Promise<Packages> => {
 export const updatePackage = async (
   id: string,
   data: any,
-): Promise<Packages> => {
+): Promise<PlansMaster> => {
   const existing = await PackageRepository.getPackageById(id);
 
   if (!existing) {

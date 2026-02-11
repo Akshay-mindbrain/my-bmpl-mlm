@@ -21,6 +21,6 @@ const config = {
   },
   adminEmail: process.env.ADMIN_EMAIL || "",
 };
-console.log(process.env.DATABASE_URL);
+// console.log(process.env.DATABASE_URL);
 
 export default config;

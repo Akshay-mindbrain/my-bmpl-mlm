@@ -1,3 +1,4 @@
+//This is Plan_master Controller [if required change the naming of this Controller in future]
 import { Request, Response, NextFunction } from "express";
 import * as PackageService from "../useCase/Package.Service";
 
@@ -6,8 +7,14 @@ export const createPackageController = async (
   res: Response,
   next: NextFunction,
 ) => {
+  console.log("Controller is being hit outside try block ");
   try {
+
+   console.log("Controller is being hit inside try block before result ");
+
     const result = await PackageService.createPackage(req.body);
+
+    console.log("Controller is being hit inside try block after result ");
 
     res.status(201).json({
       success: true,
@@ -25,7 +32,7 @@ export const getAllPackagesController = async (
   next: NextFunction,
 ) => {
   try {
-    const result = await PackageService.getAllPackages();
+    const result = await PackageService.getAllPlansMaster();
 
     res.status(200).json({
       success: true,

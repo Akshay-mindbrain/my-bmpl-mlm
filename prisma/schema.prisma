@@ -13,7 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-//////////////////// ENUMS ////////////////////
+
 
 enum Status {
   ACTIVE
@@ -37,7 +37,22 @@ enum AdminType {
   MANAGER
 }
 
-//////////////////// ADMIN ////////////////////
+enum PurchaseType {
+  FIRST_PURCHASE
+  REPURCHASE
+  SHARE_PURCHASE
+}
+
+enum IncomeGenerated {
+  NO  @map("0")
+  YES @map("1")
+}
+
+enum PurchaseStatus{
+  PENDING
+  APPROVED
+  REJECTED
+}
 
 model Admin {
   id           Int       @id @default(autoincrement()) @map("admin_id")
@@ -72,14 +87,18 @@ model Admin {
   updatedKycs  Kyc[] @relation("AdminUpdatedKyc")
   approvedKycs Kyc[] @relation("AdminApprovedKyc")
 
-  // PACKAGE audit
-  createdPackages Packages[] @relation("AdminCreatedPackages")
-  updatedPackages Packages[] @relation("AdminUpdatedPackages")
+  // PlansMaster audit
+  createdPlans PlansMaster[] @relation("AdminCreatedPlans")
+  updatedPlans PlansMaster[] @relation("AdminUpdatedPlans")
 
   // Logs
   loginHistory     AdminLoginHistory[] @relation("AdminLoginHistoryRelation")
   activityLogs     AdminActivityLog[]  @relation("AdminActivityLogs")
   userActivityLogs UserActivityLog[]   @relation("AdminUserActivityLogs")
+
+  //plan_purchases
+   approvedPlanPurchases PlanPurchase[] @relation("ApprovedPlanPurchases")
+
 
   @@map("aa_0_admin_db")
 }
@@ -140,7 +159,8 @@ model User {
   createdByAdmin Admin? @relation("AdminCreatedUsers", fields: [createdByAdminId], references: [id])
   updatedByAdmin Admin? @relation("AdminUpdatedUsers", fields: [updatedByAdminId], references: [id])
 
- 
+  planPurchases PlanPurchase[] @relation("UserPlanPurchases")
+
 
   kyc              Kyc?
   userActivities   UserActivityLog[]
@@ -188,28 +208,31 @@ model Kyc {
 
 
 
-model Packages {
-  id                 String @id @default(uuid())
-  packageName        String
-  price              Float
-  BV                 Float
-  dailyCap           Float
-  coinsPerMonth      Float
-  packageDescription String
-  status             Status @default(ACTIVE)
+model PlansMaster {
+  id                      String    @id @default(uuid())
+  planName                String
+  Description             String
+  BV                      Float
+  price                   Float
+  dp_amount               Float
+  status                  Status    @default(ACTIVE)
+ // dailyCap              Float
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  createdBy String?
-  updatedBy String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  createdBy               String?
+  updatedBy               String?
 
-  createdByAdminId Int?
-  updatedByAdminId Int?
+  createdByAdminId        Int?
+  updatedByAdminId        Int?
 
-  createdByAdmin Admin? @relation("AdminCreatedPackages", fields: [createdByAdminId], references: [id])
-  updatedByAdmin Admin? @relation("AdminUpdatedPackages", fields: [updatedByAdminId], references: [id])
+  createdByAdmin          Admin?    @relation("AdminCreatedPlans", fields: [createdByAdminId], references: [id])
+  updatedByAdmin          Admin?    @relation("AdminUpdatedPlans", fields: [updatedByAdminId], references: [id])
 
-  @@map("packages")
+  purchases               PlanPurchase[]
+
+  @@map("plans_master")
+  //previously package
 }
 
 
@@ -254,3 +277,29 @@ model AdminLoginHistory {
 
   @@map("admin_login_history")
 }
+
+model PlanPurchase {
+  id                         Int               @id @default(autoincrement())
+  plan_id                    String
+  plan                       PlansMaster       @relation(fields: [plan_id], references: [id])
+  user_id                    Int
+  user                       User              @relation("UserPlanPurchases", fields: [user_id], references: [id])
+  BV                         Float
+  dp_amount                  Float
+  plan_amount                Float
+  payment_mode               String
+  payment_proof_uri          String
+  is_income_generated        IncomeGenerated   
+  purchase_type              PurchaseType
+  status                     PurchaseStatus    @default(PENDING)
+  approved_by                Int?
+  approvedByAdmin            Admin?            @relation("ApprovedPlanPurchases", fields: [approved_by], references: [id])
+  approved_at                DateTime          @default(now())
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+  createdBy                  String
+  updatedBy                  String
+
+  @@map("plan_purchases")
+}
+

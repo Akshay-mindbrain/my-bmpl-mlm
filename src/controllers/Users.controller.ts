@@ -3,7 +3,6 @@ import * as userService from "../useCase/Users.Service";
 import { AuthRequest } from "../middleware/authenticate-user";
 import logger from "@/logger";
 
-
 export const create = async (
   req: AuthRequest,
   res: Response,
