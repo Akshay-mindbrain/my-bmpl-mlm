@@ -2,17 +2,21 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
 export interface MyJwtPayload extends JwtPayload {
-  userId: number;
+  Id: number;
 }
 
-export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
+export const verifyUser = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
   try {
     const header = req.headers.authorization;
-
     if (!header || !header.startsWith("Bearer ")) {
-      return res.status(401).json({
+      res.status(401).json({
         msg: "Authorization header missing or invalid",
       });
+      return;
     }
 
     const token = header.split(" ")[1];
@@ -20,7 +24,8 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
     const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET as string);
 
     if (typeof decoded === "string") {
-      return res.status(401).json({ msg: "Invalid token payload" });
+      res.status(401).json({ msg: "Invalid token payload" });
+      return;
     }
 
     const payload = decoded as MyJwtPayload;
@@ -29,6 +34,7 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
 
     next();
   } catch (error) {
-    return res.status(401).json({ msg: "Invalid or expired token" });
+    res.status(401).json({ msg: "Invalid or expired token" });
+    return;
   }
 };

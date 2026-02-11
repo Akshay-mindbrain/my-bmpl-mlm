@@ -41,11 +41,12 @@ model Admin {
   id           Int       @id @default(autoincrement()) @map("admin_id")
   firstName    String?   @map("admin_fname")
   email String? @unique
+  mobile String  @unique
   lastName     String?   @map("admin_lname")
   username     String    @unique @map("admin_username")
   password     String    @map("admin_password")
   adminType    AdminType @map("admin_type")
-  accessToken  String?   @map("access_token")
+ // accessToken  String?   @map("access_token")
   refreshToken String?   @map("refresh_token")
   status       String    @default("1")
   createdAt    DateTime  @default(now())

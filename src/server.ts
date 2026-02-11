@@ -1,10 +1,10 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
 import config from "./config";
-import v1 from "./routes/v1";
+import v1 from "./api/v1";
 import errorHandler from "./middleware/error-handler";
 import morganMiddleware from "./middleware/morgan-middleware";
-import cookieParser from 'cookie-parser'
+import cookieParser from "cookie-parser";
 
 export const createServer = () => {
   const app = express();
@@ -14,7 +14,7 @@ export const createServer = () => {
     .use(express.urlencoded({ extended: true }))
     .use(express.json())
     .use(cors());
- app.use(cookieParser())
+  app.use(cookieParser());
 
   app.get("/health", (req: Request, res: Response) => {
     res.json({ ok: true, environment: config.env });
