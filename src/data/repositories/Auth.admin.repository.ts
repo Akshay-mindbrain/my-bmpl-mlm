@@ -21,3 +21,12 @@ export const storeRefreshToken = (id: number, refrshToken: string) => {
     data: { refreshToken: refrshToken },
   });
 };
+export const getAdmin = async (id: number): Promise<any> => {
+  if (!id) {
+    throw new Error("Admin ID is required");
+  }
+
+  return prisma.admin.findUnique({
+    where: { id },
+  });
+};

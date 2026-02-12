@@ -6,22 +6,14 @@ import {
 } from "@/useCase/Admin.services";
 import { Request, Response } from "express";
 import { adminRegisterSchema } from "@/data/request-schemas";
+import { CreateAdminDTO, UpdateAdminDTO } from "@/dto";
 
 export const createAdmincontroller = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { error } = adminRegisterSchema.validate(req.body);
-
-    if (error) {
-      res.status(400).json({
-        msg: error.details[0].message,
-      });
-      return;
-    }
-
-    const admin = await createAdminServices(req.body);
+    const admin: CreateAdminDTO = await createAdminServices(req.body);
 
     res.status(201).json({
       success: true,
@@ -79,14 +71,13 @@ export const updateAdminController = async (
       return;
     }
 
-    const updatedAdmin = await updateAdmin(id, req.body);
+    const updatedAdmin: UpdateAdminDTO = await updateAdmin(id, req.body);
 
     res.status(200).json({
       msg: "User updated successfully",
       updatedAdmin,
     });
   } catch (error: any) {
-    // ⭐ Prisma record not found
     if (error.code === "P2025") {
       res.status(404).json({
         msg: "Admin not found",

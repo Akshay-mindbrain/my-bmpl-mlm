@@ -1,23 +1,24 @@
 import { Request, Response } from "express";
 import { loginServices } from "@/useCase/auth/auth.usecase";
 import { genAcessServices } from "@/useCase/auth/auth.usecase";
+import { loginDto } from "@/dto";
 
 export const loginController = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
   try {
-    const { username, password } = req.body;
+    const data: loginDto = req.body;
 
-    if (!username || !password) {
+    if (!data.username || !data.password) {
       res.status(400).json({
         msg: "Required all fields",
       });
       return;
     }
     const { accessToken, refreshToken } = await loginServices(
-      username,
-      password,
+      data.username,
+      data.password,
     );
     res.cookie("accessToken", accessToken, {
       httpOnly: true,

@@ -7,7 +7,7 @@ import {
 import {
   generateAccessToken,
   generateRefreshToken,
-} from "@/services/generatetoken";
+} from "@/utils/generatetoken";
 import { MyJwtPayload } from "@/middleware/verifyToken";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";

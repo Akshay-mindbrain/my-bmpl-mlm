@@ -2,7 +2,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
 export interface MyJwtPayload extends JwtPayload {
-  Id: number;
+  id: number;
 }
 
 export const verifyAdmin = (
@@ -29,6 +29,7 @@ export const verifyAdmin = (
     }
 
     const payload = decoded as MyJwtPayload;
+    console.log(payload);
 
     (req as any).user = payload;
 
