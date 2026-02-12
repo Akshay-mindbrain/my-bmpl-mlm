@@ -21,7 +21,7 @@ adminRouter.post(
   createAdmincontroller,
 );
 adminRouter.post("/login", ratelimitlogin, loginController);
-adminRouter.post("/refresh", ratelimitlogin, genAccessToken);
+adminRouter.post("/refresh", genAccessToken);
 adminRouter.get("/get", verifyAdmin, getAdmincontroller);
 adminRouter.put("/update/:id", verifyAdmin, updateAdminController);
 adminRouter.delete("/delete/:id", verifyAdmin, deleteAdminController);
