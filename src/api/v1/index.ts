@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import packagerouter from "./Packages/package.routes";
 import userRouter from "./Users/Users.routes";
 import kycrouter from "./KYC/Kyc.routes";
+import planPurchaseRouter from "./PlanPurchase/PlanPurchase.routes";
 
 const v1: Router = express.Router();
 
@@ -17,5 +18,7 @@ v1.use("/package", packagerouter);
 v1.use("/users", userRouter);
 
 v1.use("/kyc", kycrouter);
+
+v1.use("/planpurchase", planPurchaseRouter);
 
 export default v1;

@@ -15,6 +15,12 @@ export const getAdminByEmail = async (email: string): Promise<Admin | null> => {
   });
 };
 
+export const getAdmin = async (): Promise<Admin | null> => {
+  return prisma.admin.findFirst({
+    where: { status: "ACTIVE" } // optional but recommended
+  });
+};
+
 export const createAdmin = async (data: any): Promise<Admin> => {
   return prisma.admin.create({
     data,
