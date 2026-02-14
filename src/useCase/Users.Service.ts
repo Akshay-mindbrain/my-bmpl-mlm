@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import AppError from "../errors/AppError";
 import * as userRepository from "../data/repositories/Users.Repository";
 import * as userhelperRepository from "../data/repositories/UserHelper.Repository";
+import * as adminRepository from "../data/repositories/AuthRepository";
 
 export const createUser = async (data: any) => {
   return userRepository.runInTransaction(async (tx) => {
@@ -10,15 +11,18 @@ export const createUser = async (data: any) => {
     const existingEmail = await userRepository.getUserByEmail(data.email, tx);
     if (existingEmail) throw AppError.conflict("Email already exists.");
 
-    const existingMobile = await userRepository.getUserByMobile(
-      data.mobile,
-      tx,
-    );
-    if (existingMobile)
-      throw AppError.conflict("Mobile number already exists.");
+    const existingMobile = await userRepository.getUserByMobile(data.mobile, tx);
+    if (existingMobile) throw AppError.conflict("Mobile number already exists.");
 
     const totalUsers = await userRepository.countUsers(tx);
     const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    const admin = await adminRepository.getAdmin();
+    if (!admin) throw AppError.notFound("Admin not found");
+
+    const adminName = `${admin.firstName ?? ""} ${admin.lastName ?? ""}`.trim();
+
+    const { sponsorId, parentId, ...safeData } = data;
 
     if (totalUsers === 0) {
       if (data.legPosition !== null && data.legPosition !== undefined) {
@@ -27,10 +31,19 @@ export const createUser = async (data: any) => {
 
       createdUser = await userRepository.createUser(
         {
-          ...data,
+          firstName: safeData.firstName,
+          lastName: safeData.lastName,
+          email: safeData.email,
+          mobile: safeData.mobile,
           password: hashedPassword,
-          createdBy: "SYSTEM",
+          legPosition: null,
+
+          createdBy: adminName,
+          updatedBy: adminName,
           lineagePath: "",
+
+          createdByAdmin: { connect: { id: admin.id } },
+          updatedByAdmin: { connect: { id: admin.id } },
         },
         tx,
       );
@@ -55,14 +68,21 @@ export const createUser = async (data: any) => {
       if (!placementParentId) {
         throw AppError.badRequest("Unable to find placement parent.");
       }
-
       createdUser = await userRepository.createUser(
         {
-          ...data,
+          ...safeData,
           password: hashedPassword,
-          sponsorId: sponsorUser.id,
-          parentId: placementParentId,
+          legPosition: data.legPosition,
+
+          sponsor: { connect: { id: sponsorUser.id } },
+          parent: { connect: { id: placementParentId } },
+
+          createdBy: adminName,
+          updatedBy: adminName,
           lineagePath: "",
+
+          createdByAdmin: { connect: { id: admin.id } },
+          updatedByAdmin: { connect: { id: admin.id } },
         },
         tx,
       );
@@ -70,10 +90,7 @@ export const createUser = async (data: any) => {
       await userRepository.incrementDirectCount(sponsorUser.id, tx);
 
       await userRepository.createChildLineage(
-        {
-          userId: createdUser.id,
-          parentId: placementParentId,
-        },
+        { userId: createdUser.id, parentId: placementParentId },
         tx,
       );
 
@@ -91,7 +108,9 @@ export const createUser = async (data: any) => {
   });
 };
 
+
 export const getAllUsers = async () => {
+  console.log("Api is being hit in the Services")
   return userRepository.getUsers();
 };
 
@@ -116,9 +135,19 @@ export const updateUser = async (id: number, data: any) => {
     throw AppError.notAcceptable("password cannot be updated");
   }
 
+  const admin = await adminRepository.getAdmin();
+  if (!admin) {
+    throw AppError.notFound("Admin not found");
+  }
+
+  const adminName = `${admin.firstName ?? ""} ${admin.lastName ?? ""}`.trim();
+
   return userRepository.updateUser(id, {
     ...data,
-    updatedBy: isExist.id,
+    updatedBy: adminName,
+    updatedByAdmin: {
+      connect: { id: admin.id },
+    },
   });
 };
 

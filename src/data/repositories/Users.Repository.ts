@@ -40,6 +40,7 @@ export const getUserByMobile = async (
 };
 
 export const getUsers = async (db: DB = prisma): Promise<User[]> => {
+  console.log("api is being hit on repository")
   return db.user.findMany({
     orderBy: { createdAt: "desc" },
   });

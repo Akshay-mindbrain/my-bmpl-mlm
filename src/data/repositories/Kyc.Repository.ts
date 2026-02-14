@@ -1,7 +1,7 @@
 import prisma from "../../prisma-client";
 import { Kyc, Prisma } from "@prisma/client";
 
-export const createKyc = async (data: Prisma.KycCreateInput): Promise<Kyc> => {
+export const createKyc = async (data: any): Promise<Kyc> => {
   return prisma.kyc.create({ data });
 };
 

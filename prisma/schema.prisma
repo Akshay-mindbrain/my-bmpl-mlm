@@ -13,88 +13,293 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Admin {
-  id              Int      @id @default(autoincrement()) @map("admin_id")
-  firstName       String?  @map("admin_fname") @db.VarChar(50)
-  lastName        String?  @map("admin_lname") @db.VarChar(50)
-  mobileOne       String?  @map("mob_one") @db.VarChar(20)
-  mobileTwo       String?  @map("mob_two") @db.VarChar(20)
-  email           String?  @unique @map("email_id") @db.VarChar(100)
-  pinCode         String?  @map("pinno") @db.VarChar(20)
-  country         String?  @map("country_name") @db.VarChar(100)
-  state           String?  @map("state_name") @db.VarChar(100)
-  address         String?  @db.Text
-  username        String   @unique @map("admin_username") @db.VarChar(30)
-  password        String   @map("admin_password") @db.VarChar(255)
-  profileImage    String?  @map("profile_img") @db.Text
-  adminType       AdminType @map("admin_type")
-  accessToken     String?  @map("access_token") @db.Text
-  refreshToken    String?  @map("refresh_token") @db.Text
-  status          String   @default("1") @db.VarChar(1)
-  createdAt       DateTime @default(now()) @map("insert_date")
-  createdBy       String?  @map("insert_user") @db.VarChar(50)
-  updatedAt       DateTime @updatedAt @map("update_date")
-  updatedBy       String?  @map("update_user") @db.VarChar(50)
 
-  loginHistory    AdminLoginHistory[]
-  users           User[]
-  userActivities  UserActivityLog[]
 
-  @@map("aa_0_admin_db")
+enum Status {
+  ACTIVE
+  INACTIVE
 }
 
-model User {
-  id              Int      @id @default(autoincrement()) @map("user_id")
-  firstName       String?  @map("first_name") @db.VarChar(50)
-  lastName        String?  @map("last_name") @db.VarChar(50)
-  email           String   @unique @db.VarChar(100)
-  mobile          String?  @db.VarChar(20)
-  username        String   @unique @db.VarChar(30)
-  password        String   @db.VarChar(255)
-  adminId         Int      @map("admin_id")
-  admin           Admin    @relation(fields: [adminId], references: [id])
-  status          String   @default("1") @db.VarChar(1)
-  createdAt       DateTime @default(now()) @map("created_at")
-  createdBy       String?  @map("created_by") @db.VarChar(50)
-  updatedAt       DateTime @updatedAt @map("updated_at")
-  updatedBy       String?  @map("updated_by") @db.VarChar(50)
-
-  activities      UserActivityLog[]
-
-  @@map("users")
+enum LegPosition {
+  LEFT
+  RIGHT
 }
 
-model UserActivityLog {
-  id          Int      @id @default(autoincrement())
-  userId      Int?     @map("user_id")
-  adminId     Int      @map("admin_id")
-  action      String   @db.VarChar(50) // e.g., CREATE, UPDATE, DELETE, STATUS_CHANGE
-  details     String?  @db.Text
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  admin       Admin    @relation(fields: [adminId], references: [id])
-
-  @@map("user_activity_logs")
+enum KycStatus {
+  PENDING
+  APPROVED
+  REJECT
 }
-
-model AdminLoginHistory {
-  id        Int      @id @default(autoincrement())
-  adminId   Int
-  ipAddress String?
-  userAgent String?
-  loginTime DateTime @default(now())
-  logoutTime DateTime? @map("logout_time")
-  admin     Admin    @relation(fields: [adminId], references: [id])
-
-  @@map("admin_login_history")
-}
-
-
-
 
 enum AdminType {
   SUPERADMIN
   ADMIN
   MANAGER
 }
+
+enum PurchaseType {
+  FIRST_PURCHASE
+  REPURCHASE
+  SHARE_PURCHASE
+}
+
+enum IncomeGenerated {
+  NO  @map("0")
+  YES @map("1")
+}
+
+enum PurchaseStatus{
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Admin {
+  id           Int       @id @default(autoincrement()) @map("admin_id")
+  firstName    String?   @map("admin_fname") @db.VarChar(50)
+  lastName     String?   @map("admin_lname") @db.VarChar(50)
+  mobileOne    String?   @map("mob_one") @db.VarChar(20)
+  mobileTwo    String?   @map("mob_two") @db.VarChar(20)
+  email        String?   @unique @map("email_id") @db.VarChar(100)
+  pinCode      String?   @map("pinno") @db.VarChar(20)
+  country      String?   @map("country_name") @db.VarChar(100)
+  state        String?   @map("state_name") @db.VarChar(100)
+  address      String?   @db.Text
+  username     String    @unique @map("admin_username") @db.VarChar(30)
+  password     String    @map("admin_password") @db.VarChar(255)
+  profileImage String?   @map("profile_img") @db.Text
+  adminType    AdminType @map("admin_type")
+  accessToken  String?   @map("access_token") @db.Text
+  refreshToken String?   @map("refresh_token") @db.Text
+  status       Status    @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("insert_date")
+  createdBy String?  @map("insert_user") @db.VarChar(50)
+  updatedAt DateTime @updatedAt @map("update_date")
+  updatedBy String?  @map("update_user") @db.VarChar(50)
+
+  // USER audit
+  createdUsers User[] @relation("AdminCreatedUsers")
+  updatedUsers User[] @relation("AdminUpdatedUsers")
+
+  // KYC audit
+  createdKycs  Kyc[] @relation("AdminCreatedKyc")
+  updatedKycs  Kyc[] @relation("AdminUpdatedKyc")
+  approvedKycs Kyc[] @relation("AdminApprovedKyc")
+
+  // PlansMaster audit
+  createdPlans PlansMaster[] @relation("AdminCreatedPlans")
+  updatedPlans PlansMaster[] @relation("AdminUpdatedPlans")
+
+  // Logs
+  loginHistory     AdminLoginHistory[] @relation("AdminLoginHistoryRelation")
+  activityLogs     AdminActivityLog[]  @relation("AdminActivityLogs")
+  userActivityLogs UserActivityLog[]   @relation("AdminUserActivityLogs")
+
+  //plan_purchases
+   approvedPlanPurchases PlanPurchase[] @relation("ApprovedPlanPurchases")
+
+
+  @@map("aa_0_admin_db")
+}
+
+
+model User {
+  id        Int    @id @default(autoincrement())
+  firstName String
+  lastName  String
+  mobile    String @unique
+  email     String @unique
+  password  String
+
+  sponsorId   Int? 
+  parentId    Int?
+  memberId    String? @unique
+  legPosition LegPosition?
+
+  leftChildId  Int?
+  rightChildId Int?
+  lastLeftId   Int?
+  lastRightId  Int?
+
+  lineagePath String
+  directCount Int @default(0)
+
+  kycStatus KycStatus @default(PENDING)
+  status    Status    @default(ACTIVE)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+
+  sponsor        User?  @relation("SponsorRelation", fields: [sponsorId], references: [id])
+  sponsoredUsers User[] @relation("SponsorRelation")
+
+  parent   User?  @relation("ParentRelation", fields: [parentId], references: [id])
+  children User[] @relation("ParentRelation")
+
+  leftChild    User?  @relation("LeftChildRelation", fields: [leftChildId], references: [id])
+  leftChildren User[] @relation("LeftChildRelation")
+
+  rightChild    User?  @relation("RightChildRelation", fields: [rightChildId], references: [id])
+  rightChildren User[] @relation("RightChildRelation")
+
+  lastLeft      User?  @relation("LastLeftRelation", fields: [lastLeftId], references: [id])
+  lastLeftUsers User[] @relation("LastLeftRelation")
+
+  lastRight      User?  @relation("LastRightRelation", fields: [lastRightId], references: [id])
+  lastRightUsers User[] @relation("LastRightRelation")
+
+
+  createdByAdminId Int?
+  updatedByAdminId Int?
+
+  createdByAdmin Admin? @relation("AdminCreatedUsers", fields: [createdByAdminId], references: [id])
+  updatedByAdmin Admin? @relation("AdminUpdatedUsers", fields: [updatedByAdminId], references: [id])
+
+  planPurchases PlanPurchase[] @relation("UserPlanPurchases")
+
+
+  kyc              Kyc?
+  userActivities   UserActivityLog[]
+
+  @@index([lineagePath])
+  @@map("users")
+}
+
+
+
+model Kyc {
+  id      Int @id @default(autoincrement())
+  userId  Int @unique
+
+  aadharNo        String
+  aadharImgUrl    String
+  panNo           String
+  panImageUrl     String
+  bankName        String
+  accountNo       String
+  ifscCode        String
+  branchName      String
+  bankProofImgUrl String
+
+  status       KycStatus @default(PENDING)
+  rejectReason String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+
+  user User @relation(fields: [userId], references: [id])
+
+  createdByAdminId  Int?
+  updatedByAdminId  Int?
+  approvedByAdminId Int?
+
+  createdByAdmin  Admin? @relation("AdminCreatedKyc", fields: [createdByAdminId], references: [id])
+  updatedByAdmin  Admin? @relation("AdminUpdatedKyc", fields: [updatedByAdminId], references: [id])
+  approvedByAdmin Admin? @relation("AdminApprovedKyc", fields: [approvedByAdminId], references: [id])
+
+  @@map("kyc")
+}
+
+
+
+model PlansMaster {
+  id                      String    @id @default(uuid())
+  planName                String
+  Description             String
+  BV                      Float
+  price                   Float
+  dp_amount               Float
+  status                  Status    @default(ACTIVE)
+ // dailyCap              Float
+
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  createdBy               String?
+  updatedBy               String?
+
+  createdByAdminId        Int?
+  updatedByAdminId        Int?
+
+  createdByAdmin          Admin?    @relation("AdminCreatedPlans", fields: [createdByAdminId], references: [id])
+  updatedByAdmin          Admin?    @relation("AdminUpdatedPlans", fields: [updatedByAdminId], references: [id])
+
+  purchases               PlanPurchase[]
+
+  @@map("plans_master")
+  //previously package
+}
+
+
+
+model UserActivityLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  adminId   Int
+  action    String   @db.VarChar(50)
+  details   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user  User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+  admin Admin  @relation("AdminUserActivityLogs", fields: [adminId], references: [id])
+
+  @@map("user_activity_logs")
+}
+
+model AdminActivityLog {
+  id        Int      @id @default(autoincrement())
+  adminId   Int
+  action    String
+  entity    String
+  entityId  String
+  oldData   Json?
+  newData   Json?
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  admin Admin @relation("AdminActivityLogs", fields: [adminId], references: [id])
+}
+
+model AdminLoginHistory {
+  id         Int      @id @default(autoincrement())
+  adminId    Int
+  ipAddress  String?
+  userAgent  String?
+  loginTime  DateTime @default(now())
+  logoutTime DateTime?
+
+  admin Admin @relation("AdminLoginHistoryRelation", fields: [adminId], references: [id])
+
+  @@map("admin_login_history")
+}
+
+model PlanPurchase {
+  id                         Int               @id @default(autoincrement())
+  plan_id                    String
+  plan                       PlansMaster       @relation(fields: [plan_id], references: [id])
+  user_id                    Int
+  user                       User              @relation("UserPlanPurchases", fields: [user_id], references: [id])
+  BV                         Float
+  dp_amount                  Float
+  plan_amount                Float
+  payment_mode               String
+  payment_proof_uri          String
+  is_income_generated        IncomeGenerated   
+  purchase_type              PurchaseType
+  status                     PurchaseStatus    @default(PENDING)
+  approved_by                Int?
+  approvedByAdmin            Admin?            @relation("ApprovedPlanPurchases", fields: [approved_by], references: [id])
+  approved_at                DateTime          @default(now())
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+  createdBy                  String
+  updatedBy                  String
+
+  @@map("plan_purchases")
+}
+

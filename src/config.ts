@@ -1,3 +1,5 @@
+import logger from "./logger";
+
 const config = {
   env: process.env.NODE_ENV || "development",
   port: parseInt(process.env.PORT || "3000"),
@@ -19,5 +21,6 @@ const config = {
   },
   adminEmail: process.env.ADMIN_EMAIL || "",
 };
+// console.log(process.env.DATABASE_URL);
 
 export default config;
