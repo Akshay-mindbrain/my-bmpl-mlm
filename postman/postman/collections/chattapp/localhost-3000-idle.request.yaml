@@ -1,0 +1,5 @@
+$kind: http-request
+name: localhost:3000/idle
+url: localhost:3000/idle
+method: GET
+order: 5000

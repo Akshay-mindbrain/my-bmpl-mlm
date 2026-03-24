@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhost:8030/api/users
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"suka soo\",\r
+
+    \  \"email\": \"suna@example.com\",\r
+
+    \  \"mobno\": \"9776599010\",\r
+
+    \  \"password\": \"secret123\"\r
+
+    }\r\n"
+order: 1000

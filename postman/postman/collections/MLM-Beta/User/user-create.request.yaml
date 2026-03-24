@@ -1,0 +1,19 @@
+$kind: http-request
+url: http://localhost:8030/api/users
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"name\": \"suzuk doraemon\",\r
+
+    \  \"email\": \"siuk@example.com\",\r
+
+    \  \"mobno\": \"9878579080\",\r
+
+    \  \"password\": \"secret123\",\r
+
+    \  \"trackingId\": \"BLO0001\"\r
+
+    }\r\n"
+order: 5000

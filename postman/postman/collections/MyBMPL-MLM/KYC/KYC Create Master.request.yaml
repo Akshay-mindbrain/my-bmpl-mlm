@@ -1,0 +1,27 @@
+$kind: http-request
+url: "{{base_url}}{{kyc_module}}/"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"aadharNo\": \"123412341234\",\r
+
+    \  \"aadharImgUrl\": \"https://dummy-kyc.s3.amazonaws.com/aadhar1.png\",\r
+
+    \  \"panNo\": \"ABCDE1234F\",\r
+
+    \  \"panImageUrl\": \"https://dummy-kyc.s3.amazonaws.com/pan1.png\",\r
+
+    \  \"bankName\": \"State Bank of India\",\r
+
+    \  \"accountNo\": \"123456789012\",\r
+
+    \  \"ifscCode\": \"SBIN0001234\",\r
+
+    \  \"branchName\": \"Bhubaneswar Main Branch\",\r
+
+    \  \"bankProofImgUrl\": \"https://dummy-kyc.s3.amazonaws.com/bank1.png\"\r
+
+    }\r\n"
+order: 1000

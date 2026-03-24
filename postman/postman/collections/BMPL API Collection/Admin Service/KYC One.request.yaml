@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/kyc/onekyc/{{kyc_id}}"
+method: GET
+order: 23000

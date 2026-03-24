@@ -1,0 +1,30 @@
+$kind: http-request
+url: "{{base_url}}{{planpurchase_module}}/"
+method: GET
+body:
+  type: text
+  content: "\r
+
+    {\r
+
+    \  \"BV\": 100,\r
+
+    \  \"dp_amount\": 200,\r
+
+    \  \"plan_amount\": 1000,\r
+
+    \  \"payment_mode\": \"UPI\",\r
+
+    \  \"payment_proof_uri\":
+    \"https://dummy-proof.s3.amazonaws.com/payment1.png\",\r
+
+    \  \"is_income_generated\": \"NO\",\r
+
+    \  \"purchase_type\": \"FIRST_PURCHASE\",\r
+
+    \  \"plan\":\"4724c166-95c1-487f-be22-ad145f34db17\",\r
+
+    \  \"user\":2\r
+
+    }\r\n"
+order: 2000

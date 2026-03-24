@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{user_base_url}}/v1/kyc/user/{{user_id}}"
+method: GET
+order: 22000

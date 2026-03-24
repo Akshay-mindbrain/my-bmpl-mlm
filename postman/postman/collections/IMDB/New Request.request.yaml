@@ -1,0 +1,15 @@
+$kind: http-request
+url: localhost:7000/imdb
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\":\"all india rank\",\r
+
+    \    \"ratings\":\"5.3\",\r
+
+    \    \"url\":\"https://www.imdb.com/title/tt24973142/?ref_=ls_i_15\"\r
+
+    }"
+order: 1000

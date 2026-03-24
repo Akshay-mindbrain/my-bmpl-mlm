@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/admin/update/{{admin_id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "firstName": "Updated Admin"
+    }
+order: 8000

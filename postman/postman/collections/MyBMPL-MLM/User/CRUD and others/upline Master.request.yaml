@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/5/upline"
+method: GET
+order: 5000

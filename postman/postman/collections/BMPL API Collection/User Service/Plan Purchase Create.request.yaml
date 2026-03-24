@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{user_base_url}}/v1/planpurchase"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "plan_id": "{{plan_id}}",
+      "purchase_type": "FIRST_PURCHASE",
+      "payment_mode": "UPI"
+    }
+order: 26000

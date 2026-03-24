@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{base_url}}{{module_variable}}/4724c166-95c1-487f-be22-ad145f34db17"
+method: GET
+order: 2000

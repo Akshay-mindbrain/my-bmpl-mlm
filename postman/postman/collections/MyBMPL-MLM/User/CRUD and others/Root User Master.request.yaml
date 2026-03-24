@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"firstName\": \"Root\",\r
+
+    \  \"lastName\": \"User\",\r
+
+    \  \"email\": \"root2@example.com\",\r
+
+    \  \"mobile\": \"9999999986\",\r
+
+    \  \"password\": \"Password@123\"\r
+
+    }"
+order: 1000

@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/reward/generate"
+method: POST
+order: 37000

@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/admin/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "username": "superadmin",
+      "password": "Password@123"
+    }
+order: 3000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: https://jsonplaceholder.typicode.com/posts
+url: https://jsonplaceholder.typicode.com/posts
+method: GET
+order: 3000

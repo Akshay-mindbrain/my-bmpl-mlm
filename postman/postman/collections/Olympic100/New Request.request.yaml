@@ -1,0 +1,19 @@
+$kind: http-request
+url: localhost:8000/mens
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"ranking\":4,\r
+
+    \    \"name\":\"usen Bolt\",\r
+
+    \    \"dob\":\"04 MAR 1934\",\r
+
+    \    \"country\":\"INDIA\",\r
+
+    \    \"score\":\"1473\"\r
+
+    }"
+order: 1000

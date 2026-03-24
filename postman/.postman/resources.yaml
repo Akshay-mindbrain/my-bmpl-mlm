@@ -1,0 +1,25 @@
+# Use this workspace to collaborate
+workspace:
+  id: 4b8edbae-490a-4a73-83e5-a7836f78a40a
+
+localResources:
+  collections:
+    - ..\bmpl-api.postman_collection.json
+
+# Each entry here maps a local resource to one or more corresponding objects in Postman Cloud
+cloudResources:
+  collections:
+    ..\postman\collections\MLM-Beta: 38259691-3de91cf9-4d85-4da1-8940-01e2ff9fd72a
+    ..\postman\collections\New Collection: 38259691-188f8542-2bc9-4b55-9447-62bec0cd0da5
+    ..\postman\collections\chattapp: 38259691-22636310-4e45-45d0-bd25-3bbc8cf796a6
+    ..\postman\collections\prismaDb: 38259691-29b24d17-080c-4bb5-8b5f-08df004b838d
+    ..\postman\collections\RestApi: 38259691-4027edc8-acd0-40ef-bc66-776dbcf189ab
+    ..\postman\collections\Olympic100: 38259691-4058486b-255b-4936-a86b-0d4c21b293c6
+    ..\postman\collections\bmpl-user: 38259691-9d07aac5-3898-4837-a64c-5983a38fd7b4
+    ..\postman\collections\api: 38259691-52bca09c-50ca-4af0-8671-0cfd2ecf7efa
+    ..\postman\collections\IMDB: 38259691-6b90d9f7-13a8-4648-9398-d82fb135793c
+    ..\postman\collections\BMPL API Collection Copy: 38259691-860f8e29-0189-4700-a4e5-1404d8bedb68
+    ..\postman\collections\BMPL API Collection: 38259691-ad38923a-dc51-4bcf-bb99-a730e6902e57
+    ..\postman\collections\BMPL-STABLE-ADMIN: 38259691-e159a6b6-c359-44ca-afce-7040daedbcc3
+    ..\postman\collections\newmlm: 38259691-e43233f3-d4f9-4d77-83a7-416b8150eda7
+    ..\postman\collections\MyBMPL-MLM: 38259691-fd8b968c-f519-46fb-88ab-5a241d416416

@@ -1,0 +1,11 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/1/last-node-update"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"legPosition\":\"LEFT\"\r
+
+    }"
+order: 7000

@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/profile/1"
+method: GET
+order: 3000

@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/bv/getrepurchesbv/{{user_id}}"
+method: POST
+order: 27000

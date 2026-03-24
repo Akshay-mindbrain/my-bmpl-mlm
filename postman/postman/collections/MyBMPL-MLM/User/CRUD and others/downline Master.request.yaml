@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/1/downline"
+method: GET
+order: 6000

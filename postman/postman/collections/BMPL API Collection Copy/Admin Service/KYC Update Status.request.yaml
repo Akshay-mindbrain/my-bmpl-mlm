@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/kyc/updatekycstatus/{{kyc_id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "APPROVED",
+      "remark": "Verified"
+    }
+order: 24000

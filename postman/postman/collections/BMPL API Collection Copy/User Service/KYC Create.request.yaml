@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{user_base_url}}/v1/kyc"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "userId": 1,
+      "aadharNo": "123412341234",
+      "aadharImgUrl": "https://example.com/aadhar.jpg",
+      "panNo": "ABCDE1234F",
+      "panImageUrl": "https://example.com/pan.jpg",
+      "bankName": "Demo Bank",
+      "accountNo": "1234567890",
+      "ifscCode": "DEMO0001234",
+      "branchName": "Main",
+      "bankProofImgUrl": "https://example.com/passbook.jpg"
+    }
+order: 20000

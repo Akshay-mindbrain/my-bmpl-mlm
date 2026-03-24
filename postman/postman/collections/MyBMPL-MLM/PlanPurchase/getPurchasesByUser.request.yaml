@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{base_url}}{{planpurchase_module}}/my-purchases"
+method: GET
+body:
+  type: json
+  content: ""
+auth:
+  type: noauth
+order: 4000

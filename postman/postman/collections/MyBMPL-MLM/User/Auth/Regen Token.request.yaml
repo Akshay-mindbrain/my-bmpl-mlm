@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/regen-token"
+method: POST
+body:
+  type: text
+  content: ""
+order: 2000

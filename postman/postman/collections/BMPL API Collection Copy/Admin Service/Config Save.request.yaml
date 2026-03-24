@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/config/save"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "autoMemId": "STATIC",
+      "userRegistrationNo": 0,
+      "prefixMemId": "BMPL",
+      "minLength": 6,
+      "incomeCommission": 10,
+      "royaltyCommission": 5
+    }
+order: 18000

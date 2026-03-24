@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/income/history"
+method: GET
+order: 32000

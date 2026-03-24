@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{base_url}}{{planpurchase_module}}/1/approve"
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"purchaseId\":1,\r
+
+    \    \"adminId\":1\r
+
+    }"
+order: 5000

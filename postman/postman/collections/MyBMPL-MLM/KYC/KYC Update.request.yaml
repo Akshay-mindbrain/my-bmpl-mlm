@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{base_url}}{{kyc_module}}/1"
+method: PUT
+body:
+  type: json
+  content: "{\r\n    \"status\":\"APPROVED\"\r\n}"
+order: 2000
