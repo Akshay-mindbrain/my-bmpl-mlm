@@ -32,7 +32,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { toast } from "sonner";
 import { useCreateProduct } from "../../hooks/Product/useCreateProduct";
@@ -69,6 +69,7 @@ interface Product {
   categoryId: number;
   subcategoryId: number;
   brandId: number;
+  sku: string;
   HSNcode: string;
   dp_amount: number;
   mrp_amount: number;
@@ -78,7 +79,10 @@ interface Product {
   productmainimage: string;
   productOtherimage: string;
   status: "ACTIVE" | "INACTIVE";
+  createdAt: string;
+  updatedAt: string;
 }
+
 
 export default function ProductManagement() {
   const [openForm, setOpenForm] = useState(false);
@@ -97,6 +101,7 @@ export default function ProductManagement() {
     categoryId: 1,
     subcategoryId: 1,
     brandId: 1,
+    sku: "",
     HSNcode: "",
     dp_amount: "",
     mrp_amount: "",
@@ -108,20 +113,18 @@ export default function ProductManagement() {
     status: "ACTIVE",
   });
 
-  // Pagination state
+  // Pagination state (zero‑indexed page for MUI)
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   /* ================= REACT QUERY HOOKS ================= */
-  const { data: productsData, isLoading, error } = useGetProducts(1, 100);
-  const products: Product[] = productsData?.result?.data || [];
+  const { data: productsData, isLoading, error, refetch } = useGetProducts(
+    page + 1, // backend is 1‑indexed
+    rowsPerPage
+  );
 
-  // Paginated slice
-  const paginatedProducts = useMemo(() => {
-    const from = page * rowsPerPage;
-    const to = from + rowsPerPage;
-    return products.slice(from, to);
-  }, [products, page, rowsPerPage]);
+  const products: Product[] = productsData?.result?.data || [];
+  const total = productsData?.result?.total || 0;
 
   const createProductMutation = useCreateProduct();
   const updateProductMutation = useUpdateProduct();
@@ -171,6 +174,7 @@ export default function ProductManagement() {
       categoryId: parseInt(form.categoryId, 10),
       subcategoryId: parseInt(form.subcategoryId, 10),
       brandId: parseInt(form.brandId, 10),
+      sku: form.sku,
       HSNcode: form.HSNcode,
       dp_amount: parseFloat(form.dp_amount),
       mrp_amount: parseFloat(form.mrp_amount),
@@ -188,6 +192,7 @@ export default function ProductManagement() {
       await createProductMutation.mutateAsync(payload);
     }
 
+    refetch();
     resetForm();
   };
 
@@ -199,6 +204,7 @@ export default function ProductManagement() {
       categoryId: product.categoryId,
       subcategoryId: product.subcategoryId,
       brandId: product.brandId,
+      sku: product.sku,
       HSNcode: product.HSNcode,
       dp_amount: product.dp_amount.toString(),
       mrp_amount: product.mrp_amount.toString(),
@@ -220,7 +226,9 @@ export default function ProductManagement() {
   };
 
   const deleteProduct = (id: number) => {
-      deleteProductMutation.mutate(id);
+    deleteProductMutation.mutate(id, {
+      onSuccess: () => refetch(),
+    });
   };
 
   const resetForm = () => {
@@ -229,6 +237,7 @@ export default function ProductManagement() {
       categoryId: 1,
       subcategoryId: 1,
       brandId: 1,
+      sku: "",
       HSNcode: "",
       dp_amount: "",
       mrp_amount: "",
@@ -279,9 +288,7 @@ export default function ProductManagement() {
       <Card sx={{ borderRadius: 3 }}>
         <CardContent>
           <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography variant="h6">
-              Products ({products.length})
-            </Typography>
+            <Typography variant="h6">Products ({total})</Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -307,7 +314,7 @@ export default function ProductManagement() {
                 <TableHead>
                   <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
                     <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>SKU/HSN</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>SKU / HSN</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>DP</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
@@ -316,7 +323,7 @@ export default function ProductManagement() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {paginatedProducts.map((product) => (
+                  {products.map((product) => (
                     <TableRow key={product.id} hover>
                       <TableCell>
                         <Stack alignItems="start" spacing={1}>
@@ -333,7 +340,9 @@ export default function ProductManagement() {
                           </Typography>
                         </Stack>
                       </TableCell>
-                      <TableCell>{product.HSNcode}</TableCell>
+                      <TableCell>
+                        {product.sku} / {product.HSNcode}
+                      </TableCell>
                       <TableCell>₹{product.mrp_amount.toLocaleString()}</TableCell>
                       <TableCell>₹{product.dp_amount.toLocaleString()}</TableCell>
                       <TableCell>N/A</TableCell>
@@ -365,11 +374,11 @@ export default function ProductManagement() {
             </TableContainer>
           )}
 
-          {/* Pagination */}
+          {/* Pagination using backend page/limit/total */}
           <TablePagination
             rowsPerPageOptions={[5, 10, 20, 50]}
             component="div"
-            count={products.length}
+            count={total}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -420,12 +429,20 @@ export default function ProductManagement() {
               />
             </Stack>
 
-            <TextField
-              label="HSN Code"
-              fullWidth
-              value={form.HSNcode}
-              onChange={(e) => handleInputChange("HSNcode", e.target.value)}
-            />
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="SKU"
+                fullWidth
+                value={form.sku}
+                onChange={(e) => handleInputChange("sku", e.target.value)}
+              />
+              <TextField
+                label="HSN Code"
+                fullWidth
+                value={form.HSNcode}
+                onChange={(e) => handleInputChange("HSNcode", e.target.value)}
+              />
+            </Stack>
 
             <Stack direction="row" spacing={2}>
               <TextField
