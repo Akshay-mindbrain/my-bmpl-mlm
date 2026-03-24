@@ -39,8 +39,8 @@ export const createProductrepo = async (data: any) => {
             ...rest,
             HSNcode: data.HSNcode || "0000",
             tax: data.tax || 0,
-            productmainimage: mainImage,
-            productOtherimage: otherImage,
+            productmainimage: mainImage || data.productmainimage || "",
+            productOtherimage: otherImage || data.productOtherimage || "",
             category: { connect: { id: Number(categoryId) } },
             subcategory: { connect: { id: Number(subcategoryId) } },
             brand: { connect: { id: Number(brandId) } },
@@ -74,6 +74,7 @@ export const updateProductRepo = async (id: number, data: any) => {
         data,
     });
     return result;
+   
 };
 export const deleteProductRepo = async (id: number) => {
     const data = await prisma.product.delete({

@@ -51,10 +51,11 @@ export const getProductController = async (req: Request, res: Response) => {
 export const updateProductController = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
+        console.log(id)
 
         const result = await updaateProductUsecase(id, req.body);
 
-        res.status(404).json({ msg: "updaated sucessfuly", result });
+        res.status(200).json({ msg: "updaated sucessfuly", result });
     } catch (error: any) {
         res.status(500).json({
             message: error.message,
@@ -65,10 +66,11 @@ export const updateProductController = async (req: Request, res: Response) => {
 export const deleteProductController = async (req: Request, res: Response) => {
     try {
         const id = Number(req.params.id);
+        console.log(id)
 
         const result = await deleteProductusecase(id);
 
-        res.json(result);
+        res.json({msg:"delete sucessfully"});
     } catch (error: any) {
         res.status(500).json({
             message: error.message,

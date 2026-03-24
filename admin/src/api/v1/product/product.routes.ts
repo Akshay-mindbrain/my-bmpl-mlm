@@ -10,4 +10,4 @@ productRoutes.post("/configsku", createSkuConfigController);
 productRoutes.post("/create", productControlleer);
 productRoutes.get("/get", getProductController);
 productRoutes.put("/update/:id", updateProductController);
-productRoutes.delete("/delete", deleteProductController);
+productRoutes.delete("/delete/:id", deleteProductController);

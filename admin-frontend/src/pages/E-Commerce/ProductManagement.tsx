@@ -5,17 +5,23 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
+  InputLabel,
   MenuItem,
+  Select,
   Stack,
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
   Typography,
@@ -26,514 +32,579 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+
+import { toast } from "sonner";
+import { useCreateProduct } from "../../hooks/Product/useCreateProduct";
+import { useDeleteProduct } from "../../hooks/Product/useDeleteProduct";
+import { useGetProducts } from "../../hooks/Product/useGetProducts";
+import { useUpdateProduct } from "../../hooks/Product/useUpdateProduct";
+
+/* ================= CLOUDINARY UPLOAD HELPER ================= */
+export const uploadToCloudinary = async (file: File) => {
+  const data = new FormData();
+  data.append("file", file);
+  data.append("upload_preset", "frontendfileupload");
+
+  const res = await fetch(
+    "https://api.cloudinary.com/v1_1/dhuddbzui/image/upload",
+    {
+      method: "POST",
+      body: data,
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Image upload failed");
+  }
+
+  const result = await res.json();
+  return result.secure_url;
+};
 
 /* ================= TYPES ================= */
-
 interface Product {
   id: number;
-  name: string;
-  sku: string;
-  category: string;
-  dp: number;
-  mrp: number;
-  stock: number;
-  bv: number;
-  status: "Active" | "Inactive";
+  productName: string;
+  categoryId: number;
+  subcategoryId: number;
+  brandId: number;
+  HSNcode: string;
+  dp_amount: number;
+  mrp_amount: number;
+  tax: number;
   description: string;
-  images: string[];
+  specifaction: string;
+  productmainimage: string;
+  productOtherimage: string;
+  status: "ACTIVE" | "INACTIVE";
 }
 
-/* ================= COMPONENT ================= */
-
 export default function ProductManagement() {
-  const [products, setProducts] = useState<Product[]>([]);
   const [openForm, setOpenForm] = useState(false);
   const [openView, setOpenView] = useState(false);
-
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [imageIndex, setImageIndex] = useState(0);
 
+  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
+  const [otherImageFile, setOtherImageFile] = useState(null);
+  const [mainImageUrl, setMainImageUrl] = useState<string>("");
+  const [otherImageUrl, setOtherImageUrl] = useState<string>("");
+
+  // Form state
   const [form, setForm] = useState<any>({
-    name: "",
-    sku: "",
-    category: "",
-    dp: "",
-    mrp: "",
-    stock: "",
-    bv: "",
+    productName: "",
+    categoryId: 1,
+    subcategoryId: 1,
+    brandId: 1,
+    HSNcode: "",
+    dp_amount: "",
+    mrp_amount: "",
+    tax: "",
     description: "",
-    status: "Active",
-    images: [],
+    specifaction: "",
+    productmainimage: "",
+    productOtherimage: "",
+    status: "ACTIVE",
   });
 
-  /* ================= IMAGE UPLOAD ================= */
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const handleImages = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  /* ================= REACT QUERY HOOKS ================= */
+  const { data: productsData, isLoading, error } = useGetProducts(1, 100);
+  const products: Product[] = productsData?.result?.data || [];
 
-    const newImages = Array.from(files).map((file) =>
-      URL.createObjectURL(file)
-    );
+  // Paginated slice
+  const paginatedProducts = useMemo(() => {
+    const from = page * rowsPerPage;
+    const to = from + rowsPerPage;
+    return products.slice(from, to);
+  }, [products, page, rowsPerPage]);
 
-    setForm((prev: any) => ({
-      ...prev,
-      images: [...prev.images, ...newImages],
-    }));
+  const createProductMutation = useCreateProduct();
+  const updateProductMutation = useUpdateProduct();
+  const deleteProductMutation = useDeleteProduct();
+
+  /* ================= FORM HANDLERS ================= */
+  const handleInputChange = (field: string, value: any) => {
+    setForm((prev: any) => ({ ...prev, [field]: value }));
+  };
+
+  const handleUploadMainImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setMainImageFile(file);
+    setMainImageUrl(URL.createObjectURL(file));
+
+    try {
+      const url = await uploadToCloudinary(file);
+      handleInputChange("productmainimage", url);
+    } catch (err) {
+      console.error("Upload main image failed:", err);
+      toast.success("Main image upload failed");
+    }
+  };
+
+  const handleUploadOtherImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setOtherImageFile(file);
+    setOtherImageUrl(URL.createObjectURL(file));
+
+    try {
+      const url = await uploadToCloudinary(file);
+      handleInputChange("productOtherimage", url);
+    } catch (err) {
+      console.error("Upload other image failed:", err);
+      toast.success("Other image upload failed");
+    }
   };
 
   /* ================= SAVE PRODUCT ================= */
-
-  const saveProduct = () => {
-    const newProduct: Product = {
-      id: editingId ?? Date.now(),
-      name: form.name,
-      sku: form.sku,
-      category: form.category,
-      dp: Number(form.dp),
-      mrp: Number(form.mrp),
-      stock: Number(form.stock),
-      bv: Number(form.bv),
-      status: form.status,
+  const saveProduct = async () => {
+    const payload = {
+      productName: form.productName,
+      categoryId: parseInt(form.categoryId, 10),
+      subcategoryId: parseInt(form.subcategoryId, 10),
+      brandId: parseInt(form.brandId, 10),
+      HSNcode: form.HSNcode,
+      dp_amount: parseFloat(form.dp_amount),
+      mrp_amount: parseFloat(form.mrp_amount),
+      tax: parseFloat(form.tax),
       description: form.description,
-      images: form.images,
+      specifaction: form.specifaction,
+      productmainimage: form.productmainimage,
+      productOtherimage: form.productOtherimage,
+      status: form.status,
     };
 
     if (editingId) {
-      setProducts((prev) =>
-        prev.map((p) => (p.id === editingId ? newProduct : p))
-      );
+      await updateProductMutation.mutateAsync({ id: editingId, payload });
     } else {
-      setProducts((prev) => [...prev, newProduct]);
+      await createProductMutation.mutateAsync(payload);
     }
 
     resetForm();
   };
 
-  /* ================= EDIT ================= */
-
-  const editProduct = (p: Product) => {
-    setEditingId(p.id);
-    setForm({ ...p });
+  /* ================= CRUD OPERATIONS ================= */
+  const editProduct = (product: Product) => {
+    setEditingId(product.id);
+    setForm({
+      productName: product.productName,
+      categoryId: product.categoryId,
+      subcategoryId: product.subcategoryId,
+      brandId: product.brandId,
+      HSNcode: product.HSNcode,
+      dp_amount: product.dp_amount.toString(),
+      mrp_amount: product.mrp_amount.toString(),
+      tax: product.tax.toString(),
+      description: product.description,
+      specifaction: product.specifaction,
+      productmainimage: product.productmainimage,
+      productOtherimage: product.productOtherimage,
+      status: product.status,
+    });
+    setMainImageUrl(product.productmainimage);
+    setOtherImageUrl(product.productOtherimage || "");
     setOpenForm(true);
   };
 
-  /* ================= VIEW ================= */
-
-  const viewProduct = (p: Product) => {
-    setSelectedProduct(p);
-    setImageIndex(0);
+  const viewProduct = (product: Product) => {
+    setSelectedProduct(product);
     setOpenView(true);
   };
 
-  /* ================= DELETE ================= */
-
   const deleteProduct = (id: number) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+      deleteProductMutation.mutate(id);
   };
-
-  /* ================= RESET ================= */
 
   const resetForm = () => {
     setForm({
-      name: "",
-      sku: "",
-      category: "",
-      dp: "",
-      mrp: "",
-      stock: "",
-      bv: "",
+      productName: "",
+      categoryId: 1,
+      subcategoryId: 1,
+      brandId: 1,
+      HSNcode: "",
+      dp_amount: "",
+      mrp_amount: "",
+      tax: "",
       description: "",
-      status: "Active",
-      images: [],
+      specifaction: "",
+      productmainimage: "",
+      productOtherimage: "",
+      status: "ACTIVE",
     });
-
+    setMainImageFile(null);
+    setOtherImageFile(null);
+    setMainImageUrl("");
+    setOtherImageUrl("");
     setEditingId(null);
     setOpenForm(false);
   };
 
-  /* ================= UI ================= */
+  /* ================= PAGINATION HANDLERS ================= */
+  const handleChangePage = useCallback(
+    (_: any, newPage: number) => {
+      setPage(newPage);
+    },
+    []
+  );
 
+  const handleChangeRowsPerPage = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const newRowsPerPage = parseInt(event.target.value, 10);
+      setRowsPerPage(newRowsPerPage);
+      setPage(0);
+    },
+    []
+  );
+
+  /* ================= UI ================= */
   return (
     <Box p={3}>
-      <Typography variant="h4" fontWeight={600} mb={3}>
+      <Typography variant="h5" fontWeight={600} mb={3}>
         Product Management
       </Typography>
 
-      {/* ================= TABLE ================= */}
+      {error && (
+        toast.error(error.message)
+      )}
 
+      {/* ================= TABLE ================= */}
       <Card sx={{ borderRadius: 3 }}>
         <CardContent>
-
-          {/* HEADER */}
-
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
-          >
-            <Typography variant="h6">Products</Typography>
-
+          <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+            <Typography variant="h6">
+              Products ({products.length})
+            </Typography>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={() => setOpenForm(true)}
+              disabled={createProductMutation.isPending}
             >
               Add Product
             </Button>
           </Stack>
 
-          {/* TABLE */}
+          {isLoading ? (
+            <Box display="flex" justifyContent="center" p={4}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <TableContainer
+              sx={{
+                display: { xs: "block", sm: "table" },
+                overflowX: "auto",
+              }}
+            >
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                    <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>SKU/HSN</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>DP</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedProducts.map((product) => (
+                    <TableRow key={product.id} hover>
+                      <TableCell>
+                        <Stack alignItems="start" spacing={1}>
+                          <Avatar
+                            src={product.productmainimage}
+                            variant="rounded"
+                            sx={{ width: 48, height: 48 }}
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/api/placeholder/48/48";
+                            }}
+                          />
+                          <Typography fontSize={13} fontWeight={500} noWrap>
+                            {product.productName}
+                          </Typography>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>{product.HSNcode}</TableCell>
+                      <TableCell>₹{product.mrp_amount.toLocaleString()}</TableCell>
+                      <TableCell>₹{product.dp_amount.toLocaleString()}</TableCell>
+                      <TableCell>N/A</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={product.status}
+                          color={product.status === "ACTIVE" ? "success" : "default"}
+                          size="small"
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <IconButton onClick={() => viewProduct(product)}>
+                          <VisibilityIcon />
+                        </IconButton>
+                        <IconButton onClick={() => editProduct(product)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          onClick={() => deleteProduct(product.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
 
-          <Table>
-
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                <TableCell sx={{ fontWeight: 600 }}>Product</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>SKU</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>DP</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>MRP</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>BV</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell align="center" sx={{ fontWeight: 600 }}>
-                  Actions
-                </TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {products.map((p) => (
-                <TableRow key={p.id} hover>
-
-                  {/* PRODUCT */}
-
-                  <TableCell>
-                    <Stack alignItems="center" spacing={1}>
-                      <Avatar
-                        src={p.images[0]}
-                        variant="rounded"
-                        sx={{ width: 48, height: 48 }}
-                      />
-                      <Typography fontSize={13} fontWeight={500}>
-                        {p.name}
-                      </Typography>
-                    </Stack>
-                  </TableCell>
-
-                  <TableCell>{p.sku}</TableCell>
-                  <TableCell>{p.category}</TableCell>
-                  <TableCell>₹ {p.dp}</TableCell>
-                  <TableCell>₹ {p.mrp}</TableCell>
-                  <TableCell>{p.stock}</TableCell>
-                  <TableCell>{p.bv}%</TableCell>
-
-                  <TableCell>
-                    <Chip
-                      label={p.status}
-                      color={p.status === "Active" ? "success" : "default"}
-                      size="small"
-                    />
-                  </TableCell>
-
-                  <TableCell align="center">
-
-                    <IconButton onClick={() => viewProduct(p)}>
-                      <VisibilityIcon />
-                    </IconButton>
-
-                    <IconButton onClick={() => editProduct(p)}>
-                      <EditIcon />
-                    </IconButton>
-
-                    <IconButton
-                      color="error"
-                      onClick={() => deleteProduct(p.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-
-                  </TableCell>
-
-                </TableRow>
-              ))}
-            </TableBody>
-
-          </Table>
-
+          {/* Pagination */}
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 20, 50]}
+            component="div"
+            count={products.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </CardContent>
       </Card>
 
-      {/* ================= ADD / EDIT PRODUCT ================= */}
-
-      <Dialog open={openForm} onClose={resetForm} maxWidth="md" fullWidth>
-
-        <DialogTitle>
-          {editingId ? "Edit Product" : "Add New Product"}
-        </DialogTitle>
-
+      {/* ================= ADD/EDIT PRODUCT FORM ================= */}
+      <Dialog
+        open={openForm}
+        onClose={resetForm}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>{editingId ? "Edit Product" : "Add New Product"}</DialogTitle>
         <DialogContent>
-
           <Stack spacing={2} mt={2}>
+            <TextField
+              label="Product Name *"
+              fullWidth
+              value={form.productName}
+              onChange={(e) => handleInputChange("productName", e.target.value)}
+              required
+            />
 
             <Stack direction="row" spacing={2}>
               <TextField
-                label="Product Name"
-                fullWidth
-                value={form.name}
-                onChange={(e) =>
-                  setForm({ ...form, name: e.target.value })
-                }
-              />
-
-              <TextField
-                label="Category"
-                fullWidth
-                value={form.category}
-                onChange={(e) =>
-                  setForm({ ...form, category: e.target.value })
-                }
-              />
-            </Stack>
-
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="SKU"
-                fullWidth
-                value={form.sku}
-                onChange={(e) =>
-                  setForm({ ...form, sku: e.target.value })
-                }
-              />
-
-              <TextField
-                label="BV (%)"
+                label="Category ID"
                 type="number"
                 fullWidth
-                value={form.bv}
-                onChange={(e) =>
-                  setForm({ ...form, bv: e.target.value })
-                }
+                value={form.categoryId}
+                onChange={(e) => handleInputChange("categoryId", e.target.value)}
               />
-            </Stack>
-
-            <Stack direction="row" spacing={2}>
               <TextField
-                label="DP"
+                label="Subcategory ID"
                 type="number"
                 fullWidth
-                value={form.dp}
-                onChange={(e) =>
-                  setForm({ ...form, dp: e.target.value })
-                }
+                value={form.subcategoryId}
+                onChange={(e) => handleInputChange("subcategoryId", e.target.value)}
               />
-
               <TextField
-                label="MRP"
+                label="Brand ID"
                 type="number"
                 fullWidth
-                value={form.mrp}
-                onChange={(e) =>
-                  setForm({ ...form, mrp: e.target.value })
-                }
+                value={form.brandId}
+                onChange={(e) => handleInputChange("brandId", e.target.value)}
               />
-            </Stack>
-
-            <Stack direction="row" spacing={2}>
-              <TextField
-                label="Stock"
-                type="number"
-                fullWidth
-                value={form.stock}
-                onChange={(e) =>
-                  setForm({ ...form, stock: e.target.value })
-                }
-              />
-
-              <TextField
-                select
-                label="Status"
-                fullWidth
-                value={form.status}
-                onChange={(e) =>
-                  setForm({ ...form, status: e.target.value })
-                }
-              >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
-              </TextField>
             </Stack>
 
             <TextField
-              multiline
-              rows={3}
-              label="Description"
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
+              label="HSN Code"
+              fullWidth
+              value={form.HSNcode}
+              onChange={(e) => handleInputChange("HSNcode", e.target.value)}
             />
 
-            {/* IMAGE UPLOAD */}
-
-            <Button component="label" variant="outlined">
-              Upload Images
-              <input hidden type="file" multiple onChange={handleImages} />
-            </Button>
-
-            {/* IMAGE PREVIEW */}
-
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {form.images.map((img: string, index: number) => (
-                <Avatar
-                  key={index}
-                  src={img}
-                  variant="rounded"
-                  sx={{ width: 60, height: 60 }}
-                />
-              ))}
+            <Stack direction="row" spacing={2}>
+              <TextField
+                label="DP Amount *"
+                type="number"
+                fullWidth
+                value={form.dp_amount}
+                onChange={(e) => handleInputChange("dp_amount", e.target.value)}
+              />
+              <TextField
+                label="MRP Amount *"
+                type="number"
+                fullWidth
+                value={form.mrp_amount}
+                onChange={(e) => handleInputChange("mrp_amount", e.target.value)}
+              />
+              <TextField
+                label="Tax (%)"
+                type="number"
+                step={0.1}
+                fullWidth
+                value={form.tax}
+                onChange={(e) => handleInputChange("tax", e.target.value)}
+              />
             </Stack>
 
+            <TextField
+              label="Description"
+              multiline
+              rows={3}
+              fullWidth
+              value={form.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+            />
+
+            <TextField
+              label="Specification"
+              multiline
+              rows={2}
+              fullWidth
+              value={form.specifaction}
+              onChange={(e) => handleInputChange("specifaction", e.target.value)}
+            />
+
+            {/* Image Uploads */}
+            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+              {/* Main Image */}
+              <Box flex={1}>
+                <Typography variant="body2" mb={0.5}>
+                  Main Image
+                </Typography>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUploadMainImage}
+                />
+                {mainImageUrl && (
+                  <Avatar
+                    src={mainImageUrl}
+                    variant="rounded"
+                    sx={{ width: 80, height: 80, mt: 1 }}
+                  />
+                )}
+              </Box>
+
+              {/* Other Image */}
+              <Box flex={1}>
+                <Typography variant="body2" mb={0.5}>
+                  Other Image
+                </Typography>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleUploadOtherImage}
+                />
+                {otherImageUrl && (
+                  <Avatar
+                    src={otherImageUrl}
+                    variant="rounded"
+                    sx={{ width: 80, height: 80, mt: 1 }}
+                  />
+                )}
+              </Box>
+            </Stack>
+
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={form.status}
+                label="Status"
+                onChange={(e) => handleInputChange("status", e.target.value)}
+              >
+                <MenuItem value="ACTIVE">Active</MenuItem>
+                <MenuItem value="INACTIVE">Inactive</MenuItem>
+              </Select>
+            </FormControl>
           </Stack>
-
         </DialogContent>
-
         <DialogActions>
           <Button onClick={resetForm}>Cancel</Button>
-          <Button variant="contained" onClick={saveProduct}>
-            Save
+          <Button
+            variant="contained"
+            onClick={saveProduct}
+            disabled={
+              createProductMutation.isPending ||
+              updateProductMutation.isPending ||
+              !form.productName ||
+              !form.dp_amount ||
+              !form.mrp_amount
+            }
+          >
+            {createProductMutation.isPending || updateProductMutation.isPending ? (
+              <CircularProgress size={20} />
+            ) : editingId ? (
+              "Update"
+            ) : (
+              "Create"
+            )}
           </Button>
         </DialogActions>
-
       </Dialog>
 
-      {/* ================= VIEW PRODUCT ================= */}
-
+      {/* ================= VIEW PRODUCT DIALOG ================= */}
       <Dialog
         open={openView}
         onClose={() => setOpenView(false)}
         maxWidth="md"
         fullWidth
       >
-
         <DialogTitle>Product Details</DialogTitle>
-
         <DialogContent>
-
           {selectedProduct && (
-
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: {
-                  xs: "1fr",
-                  md: "300px 1fr",
-                },
-                gap: 3,
-                mt: 2,
-              }}
-            >
-
-              {/* IMAGE SLIDER */}
-
-              <Box>
-
+            <Stack spacing={2} mt={2}>
+              <Stack direction="row" spacing={2}>
                 <Avatar
-                  src={selectedProduct.images[imageIndex]}
+                  src={selectedProduct.productmainimage}
                   variant="rounded"
-                  sx={{
-                    width: "100%",
-                    height: 250,
-                    mb: 2,
-                  }}
+                  sx={{ width: 100, height: 100 }}
                 />
-
-                <Stack direction="row" spacing={1} flexWrap="wrap">
-
-                  {selectedProduct.images.map((img, i) => (
-                    <Avatar
-                      key={i}
-                      src={img}
-                      variant="rounded"
-                      sx={{
-                        width: 50,
-                        height: 50,
-                        cursor: "pointer",
-                        border:
-                          imageIndex === i
-                            ? "2px solid #1976d2"
-                            : "none",
-                      }}
-                      onClick={() => setImageIndex(i)}
-                    />
-                  ))}
-
-                </Stack>
-
-              </Box>
-
-              {/* DETAILS */}
-
-              <Stack spacing={1.5}>
-
-                <Typography variant="h6">
-                  {selectedProduct.name}
-                </Typography>
-
-                <Typography>
-                  <b>SKU:</b> {selectedProduct.sku}
-                </Typography>
-
-                <Typography>
-                  <b>Category:</b> {selectedProduct.category}
-                </Typography>
-
-                <Typography>
-                  <b>DP:</b> ₹ {selectedProduct.dp}
-                </Typography>
-
-                <Typography>
-                  <b>MRP:</b> ₹ {selectedProduct.mrp}
-                </Typography>
-
-                <Typography>
-                  <b>Stock:</b> {selectedProduct.stock}
-                </Typography>
-
-                <Typography>
-                  <b>BV:</b> {selectedProduct.bv}%
-                </Typography>
-
-                <Typography>
-                  <b>Status:</b> {selectedProduct.status}
-                </Typography>
-
-                <Typography mt={2}>
-                  <b>Description</b>
-                </Typography>
-
-                <Typography color="text.secondary">
-                  {selectedProduct.description}
-                </Typography>
-
+                <Box>
+                  <Typography variant="h6">{selectedProduct.productName}</Typography>
+                  <Chip
+                    label={selectedProduct.status}
+                    color="success"
+                    size="small"
+                  />
+                </Box>
               </Stack>
 
-            </Box>
-
+              <Stack spacing={1}>
+                <Typography>
+                  <strong>HSN Code:</strong> {selectedProduct.HSNcode}
+                </Typography>
+                <Typography>
+                  <strong>DP:</strong> ₹{selectedProduct.dp_amount.toLocaleString()}
+                </Typography>
+                <Typography>
+                  <strong>MRP:</strong> ₹{selectedProduct.mrp_amount.toLocaleString()}
+                </Typography>
+                <Typography>
+                  <strong>Tax:</strong> {selectedProduct.tax}%
+                </Typography>
+                <Typography>
+                  <strong>Category ID:</strong> {selectedProduct.categoryId}
+                </Typography>
+                <Typography>
+                  <strong>Description:</strong> {selectedProduct.description}
+                </Typography>
+                <Typography>
+                  <strong>Specification:</strong> {selectedProduct.specifaction}
+                </Typography>
+              </Stack>
+            </Stack>
           )}
-
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setOpenView(false)}>Close</Button>
         </DialogActions>
-
       </Dialog>
-
     </Box>
   );
 }
