@@ -3,12 +3,14 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 import DateWiseUserIncome from "./components/IncomeComponent/DateWiseUserIncome";
 import Layout from "./components/layout/Layout";
+import ProtectedRoute from "./components/layout/ProtectedRoute";
 import PayoutHistoryByDate from "./components/PayoutComponent/PayoutHistoryByDate";
 import AdminPage from "./pages/AdminPage";
 import DashboardPage from "./pages/DashboardPage";
+import BrandManagement from "./pages/E-Commerce/BrandManagement";
 import CategoryManagement from "./pages/E-Commerce/CategoryManagement";
-import OrdersManagement from "./pages/E-Commerce/OrdersManagement";
 import ProductManagement from "./pages/E-Commerce/ProductManagement";
+import SubcategoryManagement from "./pages/E-Commerce/SubCategoryMangement";
 import Allincome from "./pages/Income/Allincome";
 import All from "./pages/Kyc/All";
 import Approved from "./pages/Kyc/Approved";
@@ -16,8 +18,8 @@ import Pending from "./pages/Kyc/Pending";
 import Rejected from "./pages/Kyc/Rejected";
 import LoginPage from "./pages/LoginPage";
 import PackagesPage from "./pages/PackagesPage";
-import PlanApprovals from "./pages/PlanApprovals";
 import AllPayout from "./pages/Payout/AllPayout";
+import PlanApprovals from "./pages/PlanApprovals";
 import ProfilePage from "./pages/ProfilePage";
 import Rewards from "./pages/Rewards/Rewards";
 import IncomeComission from "./pages/Setting-Config/IncomeComission";
@@ -25,7 +27,6 @@ import MailManagement from "./pages/Setting-Config/MailManagement";
 import RoyalityComission from "./pages/Setting-Config/RoyalityComission";
 import UserConfig from "./pages/Setting-Config/UserConfig";
 import UsersPage from "./pages/UsersPage";
-import ProtectedRoute from "./components/layout/ProtectedRoute";
 
 function App() {
   return (
@@ -72,11 +73,13 @@ function App() {
               <Route path="/rewards" element={<Rewards />} />
 
               {/* ecommerce */}
-              <Route path="/ecommerce/categories" element={<CategoryManagement />} />
-              <Route path="/ecommerce/products" element={<ProductManagement />} />
-              <Route path="/ecommerce/orders" element={<OrdersManagement />} />
+              <Route path="/e-commerce/category" element={<CategoryManagement />} />
+              <Route path="/e-commerce/products" element={<ProductManagement />} />
+              <Route path="/e-commerce/sub-category" element={<SubcategoryManagement />} />
+              <Route path="/e-commerce/brands" element={<BrandManagement />} />
+              {/* <Route path="/settings/sku-config" element={<SkuConfig />} / */}
 
-              <Route path="/e-commerce/orders" element={<OrdersManagement />} />
+              {/* <Route path="/e-commerce/orders" element={<OrdersManagement />} /> */}
             </Route>
           </Route>
 

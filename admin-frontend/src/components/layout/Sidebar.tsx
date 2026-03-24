@@ -126,9 +126,10 @@ const menuConfig: MenuConfig[] = [
     icon: <Storefront />,
     basePath: "/e-commerce",
     children: [
-      { name: "Category Management", path: "/e-commerce/category", isNew: true },
-      { name: "Product Management", path: "/e-commerce/products", isNew: true },
-      { name: "Order Management", path: "/e-commerce/orders" },
+      { name: "Category Management", path: "/e-commerce/category" },
+      { name: "Sub-Category Management", path: "/e-commerce/sub-category" },
+      { name: "Brand Management", path: "/e-commerce/brands" },
+      { name: "Product Management", path: "/e-commerce/products" },
     ],
   },
   {

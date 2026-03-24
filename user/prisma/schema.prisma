@@ -508,7 +508,7 @@ model RoyalQualifier {
   user      User     @relation("RoyalUserRelation", fields: [userId], references: [id])
   child     User     @relation("RoyalChildRelation", fields: [childId], references: [id])
 
-  @@unique([userId, childId])
+  // @@unique([userId, childId])
   @@index([userId])
   @@index([childId])
   @@map("royal_qualifier")

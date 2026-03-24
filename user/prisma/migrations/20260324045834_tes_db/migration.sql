@@ -7,6 +7,7 @@ CREATE TABLE `aa_0_admin_db` (
     `admin_lname` VARCHAR(191) NULL,
     `admin_username` VARCHAR(191) NULL,
     `admin_password` VARCHAR(191) NOT NULL,
+    `address` VARCHAR(191) NULL,
     `admin_type` ENUM('SUPERADMIN', 'ADMIN', 'MANAGER') NOT NULL DEFAULT 'SUPERADMIN',
     `refresh_token` VARCHAR(191) NULL,
     `status` VARCHAR(191) NOT NULL DEFAULT '1',
@@ -68,7 +69,6 @@ CREATE TABLE `users` (
     INDEX `users_sponsorId_idx`(`sponsorId`),
     INDEX `users_parentId_idx`(`parentId`),
     INDEX `users_memberId_idx`(`memberId`),
-    INDEX `users_parentId_legPosition_idx`(`parentId`, `legPosition`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -157,6 +157,7 @@ CREATE TABLE `plan_purchases` (
     `createdBy` VARCHAR(191) NOT NULL,
     `updatedBy` VARCHAR(191) NOT NULL,
 
+    UNIQUE INDEX `plan_purchases_transferred_to_user_id_key`(`transferred_to_user_id`),
     INDEX `plan_purchases_user_id_purchase_type_idx`(`user_id`, `purchase_type`),
     INDEX `plan_purchases_user_id_share_status_idx`(`user_id`, `share_status`),
     INDEX `plan_purchases_parent_purchase_id_idx`(`parent_purchase_id`),
@@ -199,7 +200,6 @@ CREATE TABLE `bv_ledger` (
     INDEX `bv_ledger_buyer_id_idx`(`buyer_id`),
     INDEX `bv_ledger_purchase_id_idx`(`purchase_id`),
     INDEX `bv_ledger_purchase_type_idx`(`purchase_type`),
-    INDEX `bv_ledger_user_id_purchase_type_idx`(`user_id`, `purchase_type`),
     UNIQUE INDEX `bv_ledger_purchase_id_user_id_key`(`purchase_id`, `user_id`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -441,14 +441,54 @@ CREATE TABLE `brand` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `product` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `productName` VARCHAR(191) NOT NULL,
+    `categoryId` INTEGER NOT NULL,
+    `subcategoryId` INTEGER NOT NULL,
+    `brandId` INTEGER NOT NULL,
+    `sku` VARCHAR(191) NOT NULL,
+    `HSNcode` VARCHAR(191) NOT NULL,
+    `dp_amount` INTEGER NOT NULL,
+    `mrp_amount` INTEGER NOT NULL,
+    `tax` DOUBLE NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+    `specifaction` VARCHAR(191) NOT NULL,
+    `productmainimage` VARCHAR(191) NOT NULL,
+    `productOtherimage` VARCHAR(191) NOT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `product_sku_key`(`sku`),
+    INDEX `product_categoryId_idx`(`categoryId`),
+    INDEX `product_subcategoryId_idx`(`subcategoryId`),
+    INDEX `product_brandId_idx`(`brandId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `sku_config` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `key` VARCHAR(191) NOT NULL,
+    `value` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `sku_config_key_key`(`key`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `order_place` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `orderNumber` VARCHAR(191) NOT NULL,
     `orderDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `customerId` INTEGER NOT NULL,
-    `paymentMethod` ENUM('COD', 'ONLINE', 'WALLET') NOT NULL,
+    `paymentMethod` ENUM('COD', 'ONLINE', 'WALLET', 'DP_WALLET') NOT NULL,
     `paymentStatus` ENUM('PENDING', 'PAID', 'FAILED') NOT NULL DEFAULT 'PENDING',
-    `orderStatus` ENUM('PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    `orderStatus` ENUM('PENDING', 'CONFIRMED', 'PACKAGING', 'SHIPPING', 'READY_FOR_DELIVERY', 'DELIVERED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
     `subtotal` DECIMAL(18, 3) NOT NULL,
     `shippingAmount` DECIMAL(18, 3) NOT NULL,
     `gstAmount` DECIMAL(18, 3) NOT NULL,
@@ -504,42 +544,48 @@ CREATE TABLE `order_address` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `product` (
+CREATE TABLE `user_addresses` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `productName` VARCHAR(191) NOT NULL,
-    `categoryId` INTEGER NOT NULL,
-    `subcategoryId` INTEGER NOT NULL,
-    `brandId` INTEGER NOT NULL,
-    `sku` VARCHAR(191) NOT NULL,
-    `HSNcode` VARCHAR(191) NOT NULL,
-    `dp_amount` INTEGER NOT NULL,
-    `mrp_amount` INTEGER NOT NULL,
-    `tax` DOUBLE NOT NULL,
-    `description` VARCHAR(191) NOT NULL,
-    `specifaction` VARCHAR(191) NOT NULL,
-    `productmainimage` VARCHAR(191) NOT NULL,
-    `productOtherimage` VARCHAR(191) NOT NULL,
-    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `userId` INTEGER NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NOT NULL,
+    `addressLine` VARCHAR(191) NOT NULL,
+    `city` VARCHAR(191) NOT NULL,
+    `state` VARCHAR(191) NOT NULL,
+    `pincode` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(191) NOT NULL DEFAULT 'India',
+    `isDefault` BOOLEAN NOT NULL DEFAULT false,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `product_sku_key`(`sku`),
-    INDEX `product_categoryId_idx`(`categoryId`),
-    INDEX `product_subcategoryId_idx`(`subcategoryId`),
-    INDEX `product_brandId_idx`(`brandId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `sku_config` (
+CREATE TABLE `carts` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `key` VARCHAR(191) NOT NULL,
-    `value` VARCHAR(191) NOT NULL,
-    `description` VARCHAR(191) NULL,
+    `userId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `quantity` INTEGER NOT NULL DEFAULT 1,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `sku_config_key_key`(`key`),
+    UNIQUE INDEX `carts_userId_productId_key`(`userId`, `productId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `reviews` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `rating` INTEGER NOT NULL DEFAULT 5,
+    `comment` TEXT NULL,
+    `images` TEXT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -608,9 +654,6 @@ ALTER TABLE `plan_purchases` ADD CONSTRAINT `plan_purchases_user_id_fkey` FOREIG
 
 -- AddForeignKey
 ALTER TABLE `plan_purchases` ADD CONSTRAINT `plan_purchases_approved_by_fkey` FOREIGN KEY (`approved_by`) REFERENCES `aa_0_admin_db`(`admin_id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `plan_purchases` ADD CONSTRAINT `plan_purchases_transferred_to_user_id_fkey` FOREIGN KEY (`transferred_to_user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `plan_purchases` ADD CONSTRAINT `plan_purchases_parent_purchase_id_fkey` FOREIGN KEY (`parent_purchase_id`) REFERENCES `plan_purchases`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -685,6 +728,15 @@ ALTER TABLE `brand` ADD CONSTRAINT `brand_subcategoryId_fkey` FOREIGN KEY (`subc
 ALTER TABLE `brand` ADD CONSTRAINT `brand_categoriesId_fkey` FOREIGN KEY (`categoriesId`) REFERENCES `categories`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `product` ADD CONSTRAINT `product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `product` ADD CONSTRAINT `product_subcategoryId_fkey` FOREIGN KEY (`subcategoryId`) REFERENCES `subcategories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `product` ADD CONSTRAINT `product_brandId_fkey` FOREIGN KEY (`brandId`) REFERENCES `brand`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `order_place` ADD CONSTRAINT `order_place_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -697,13 +749,19 @@ ALTER TABLE `order_details` ADD CONSTRAINT `order_details_productId_fkey` FOREIG
 ALTER TABLE `order_address` ADD CONSTRAINT `order_address_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `order_place`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `product` ADD CONSTRAINT `product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `user_addresses` ADD CONSTRAINT `user_addresses_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `product` ADD CONSTRAINT `product_subcategoryId_fkey` FOREIGN KEY (`subcategoryId`) REFERENCES `subcategories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `carts` ADD CONSTRAINT `carts_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `product` ADD CONSTRAINT `product_brandId_fkey` FOREIGN KEY (`brandId`) REFERENCES `brand`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `carts` ADD CONSTRAINT `carts_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `reviews` ADD CONSTRAINT `reviews_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `reviews` ADD CONSTRAINT `reviews_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_ConfigRoyalPlans` ADD CONSTRAINT `_ConfigRoyalPlans_A_fkey` FOREIGN KEY (`A`) REFERENCES `config_table`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

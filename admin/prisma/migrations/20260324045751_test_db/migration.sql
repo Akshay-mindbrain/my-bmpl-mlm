@@ -7,6 +7,7 @@ CREATE TABLE `aa_0_admin_db` (
     `admin_lname` VARCHAR(191) NULL,
     `admin_username` VARCHAR(191) NULL,
     `admin_password` VARCHAR(191) NOT NULL,
+    `address` VARCHAR(191) NULL,
     `admin_type` ENUM('SUPERADMIN', 'ADMIN', 'MANAGER') NOT NULL DEFAULT 'SUPERADMIN',
     `refresh_token` VARCHAR(191) NULL,
     `status` VARCHAR(191) NOT NULL DEFAULT '1',
@@ -114,9 +115,9 @@ CREATE TABLE `plans_master` (
     `id` VARCHAR(191) NOT NULL,
     `planName` VARCHAR(191) NOT NULL,
     `Description` VARCHAR(191) NOT NULL,
-    `BV` DOUBLE NOT NULL,
-    `price` DOUBLE NOT NULL,
-    `dp_amount` DOUBLE NOT NULL,
+    `BV` DECIMAL(18, 3) NOT NULL,
+    `price` DECIMAL(18, 3) NOT NULL,
+    `dp_amount` DECIMAL(18, 3) NOT NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
     `features` JSON NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -135,9 +136,9 @@ CREATE TABLE `plan_purchases` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `plan_id` VARCHAR(191) NOT NULL,
     `user_id` INTEGER NOT NULL,
-    `BV` DOUBLE NOT NULL,
-    `dp_amount` DOUBLE NOT NULL,
-    `plan_amount` DOUBLE NOT NULL,
+    `BV` DECIMAL(18, 3) NOT NULL,
+    `dp_amount` DECIMAL(18, 3) NOT NULL,
+    `plan_amount` DECIMAL(18, 3) NOT NULL,
     `payment_mode` VARCHAR(191) NULL,
     `payment_proof_uri` VARCHAR(191) NULL,
     `purchase_type` ENUM('FIRST_PURCHASE', 'REPURCHASE', 'SHARE_PURCHASE') NOT NULL,
@@ -172,10 +173,10 @@ CREATE TABLE `config_table` (
     `minLength` INTEGER NOT NULL,
     `plan_config_key` VARCHAR(191) NOT NULL,
     `plan_config_value` ENUM('0', '1') NOT NULL DEFAULT '0',
-    `incomeCommission` DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    `royaltyCommission` DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    `tds` DECIMAL(10, 2) NOT NULL DEFAULT 0,
-    `admincharges` DECIMAL(10, 2) NOT NULL DEFAULT 0,
+    `incomeCommission` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `royaltyCommission` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `tds` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `admincharges` DECIMAL(18, 3) NOT NULL DEFAULT 0,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `config_table_plan_config_key_key`(`plan_config_key`),
@@ -188,7 +189,7 @@ CREATE TABLE `bv_ledger` (
     `purchase_id` INTEGER NOT NULL,
     `buyer_id` INTEGER NOT NULL,
     `user_id` INTEGER NOT NULL,
-    `bv` DOUBLE NOT NULL,
+    `bv` DECIMAL(18, 3) NOT NULL,
     `purchase_type` ENUM('FIRST_PURCHASE', 'REPURCHASE', 'SHARE_PURCHASE') NOT NULL,
     `buyer_leg` ENUM('LEFT', 'RIGHT') NULL,
     `is_income_generated` ENUM('0', '1') NOT NULL DEFAULT '0',
@@ -237,7 +238,7 @@ CREATE TABLE `system_income` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
     `matched_bv` INTEGER NOT NULL,
-    `income` DECIMAL(18, 2) NOT NULL,
+    `income` DECIMAL(18, 3) NOT NULL,
     `message_data` VARCHAR(191) NULL,
     `generateIncomeId` INTEGER NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
@@ -255,12 +256,12 @@ CREATE TABLE `system_income` (
 CREATE TABLE `wallet` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
-    `total_income` DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    `total_withdraw` DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    `total_dp_amount` DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    `balance_dp_amount` DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    `super_coins` DECIMAL(18, 2) NOT NULL DEFAULT 0,
-    `used_super_coins` DECIMAL(18, 2) NOT NULL DEFAULT 0,
+    `total_income` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `total_withdraw` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `total_dp_amount` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `balance_dp_amount` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `super_coins` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `used_super_coins` DECIMAL(18, 3) NOT NULL DEFAULT 0,
     `matched_bv` INTEGER NOT NULL DEFAULT 0,
     `total_left_bv` INTEGER NOT NULL DEFAULT 0,
     `total_right_bv` INTEGER NOT NULL DEFAULT 0,
@@ -281,7 +282,7 @@ CREATE TABLE `wallet_transaction` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
     `type` ENUM('INCOME', 'WITHDRAW', 'PURCHASE', 'ADJUSTMENT') NOT NULL,
-    `amount` DECIMAL(18, 2) NOT NULL,
+    `amount` DECIMAL(18, 3) NOT NULL,
     `reference_id` INTEGER NULL,
     `message` VARCHAR(191) NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
@@ -299,7 +300,7 @@ CREATE TABLE `royal_club_income` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
     `generateIncomeId` INTEGER NULL,
-    `income` DECIMAL(65, 30) NOT NULL,
+    `income` DECIMAL(18, 3) NOT NULL,
     `message_data` VARCHAR(191) NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -315,10 +316,10 @@ CREATE TABLE `payout` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `payoutDate` DATETIME(3) NOT NULL,
     `payoutCycle` VARCHAR(191) NOT NULL,
-    `totalAmount` DECIMAL(65, 30) NOT NULL,
-    `tds` DECIMAL(65, 30) NOT NULL,
-    `adminCharges` DECIMAL(65, 30) NOT NULL,
-    `netAmount` DECIMAL(65, 30) NOT NULL,
+    `totalAmount` DECIMAL(18, 3) NOT NULL,
+    `tds` DECIMAL(18, 3) NOT NULL,
+    `adminCharges` DECIMAL(18, 3) NOT NULL,
+    `netAmount` DECIMAL(18, 3) NOT NULL,
     `remarks` VARCHAR(191) NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -334,10 +335,10 @@ CREATE TABLE `users_payout_history` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `userId` INTEGER NOT NULL,
     `payoutId` INTEGER NOT NULL,
-    `totalAmount` DECIMAL(65, 30) NOT NULL,
-    `tdsAmount` DECIMAL(65, 30) NOT NULL,
-    `adminCharges` DECIMAL(65, 30) NOT NULL,
-    `netAmount` DECIMAL(65, 30) NOT NULL,
+    `totalAmount` DECIMAL(18, 3) NOT NULL,
+    `tdsAmount` DECIMAL(18, 3) NOT NULL,
+    `adminCharges` DECIMAL(18, 3) NOT NULL,
+    `netAmount` DECIMAL(18, 3) NOT NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -350,10 +351,10 @@ CREATE TABLE `users_payout_history` (
 -- CreateTable
 CREATE TABLE `generate_income` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `totalIncome` DECIMAL(18, 2) NOT NULL,
-    `netincome` DOUBLE NOT NULL DEFAULT 0,
-    `tds` DECIMAL(18, 2) NOT NULL,
-    `adminCharges` DECIMAL(18, 2) NOT NULL,
+    `totalIncome` DECIMAL(18, 3) NOT NULL,
+    `netincome` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `tds` DECIMAL(18, 3) NOT NULL,
+    `adminCharges` DECIMAL(18, 3) NOT NULL,
     `generatedDate` DATETIME(3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
@@ -365,9 +366,9 @@ CREATE TABLE `income_history` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `incomeId` INTEGER NOT NULL,
     `userId` INTEGER NOT NULL,
-    `totalIncome` DECIMAL(18, 2) NOT NULL,
-    `tds` DECIMAL(18, 2) NOT NULL,
-    `adminCharges` DECIMAL(18, 2) NOT NULL,
+    `totalIncome` DECIMAL(18, 3) NOT NULL,
+    `tds` DECIMAL(18, 3) NOT NULL,
+    `adminCharges` DECIMAL(18, 3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     PRIMARY KEY (`id`)
@@ -394,6 +395,197 @@ CREATE TABLE `reward_history` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     UNIQUE INDEX `reward_history_userId_rewardId_key`(`userId`, `rewardId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `categories` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `Description` VARCHAR(191) NOT NULL,
+    `image` VARCHAR(191) NOT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `categories_name_key`(`name`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `subcategories` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `categoryId` INTEGER NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `Description` VARCHAR(191) NOT NULL,
+    `image` VARCHAR(191) NOT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `brand` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `subcategoryId` INTEGER NOT NULL,
+    `brandname` VARCHAR(191) NOT NULL,
+    `image` VARCHAR(191) NOT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+    `categoriesId` INTEGER NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `product` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `productName` VARCHAR(191) NOT NULL,
+    `categoryId` INTEGER NOT NULL,
+    `subcategoryId` INTEGER NOT NULL,
+    `brandId` INTEGER NOT NULL,
+    `sku` VARCHAR(191) NOT NULL,
+    `HSNcode` VARCHAR(191) NOT NULL,
+    `dp_amount` INTEGER NOT NULL,
+    `mrp_amount` INTEGER NOT NULL,
+    `tax` DOUBLE NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+    `specifaction` VARCHAR(191) NOT NULL,
+    `productmainimage` VARCHAR(191) NOT NULL,
+    `productOtherimage` VARCHAR(191) NOT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `product_sku_key`(`sku`),
+    INDEX `product_categoryId_idx`(`categoryId`),
+    INDEX `product_subcategoryId_idx`(`subcategoryId`),
+    INDEX `product_brandId_idx`(`brandId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `sku_config` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `key` VARCHAR(191) NOT NULL,
+    `value` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `sku_config_key_key`(`key`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `order_place` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `orderNumber` VARCHAR(191) NOT NULL,
+    `orderDate` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `customerId` INTEGER NOT NULL,
+    `paymentMethod` ENUM('COD', 'ONLINE', 'WALLET', 'DP_WALLET') NOT NULL,
+    `paymentStatus` ENUM('PENDING', 'PAID', 'FAILED') NOT NULL DEFAULT 'PENDING',
+    `orderStatus` ENUM('PENDING', 'CONFIRMED', 'PACKAGING', 'SHIPPING', 'READY_FOR_DELIVERY', 'DELIVERED', 'CANCELLED') NOT NULL DEFAULT 'PENDING',
+    `subtotal` DECIMAL(18, 3) NOT NULL,
+    `shippingAmount` DECIMAL(18, 3) NOT NULL,
+    `gstAmount` DECIMAL(18, 3) NOT NULL,
+    `coinsApplied` DECIMAL(18, 3) NOT NULL,
+    `totalPurchaseAmount` DECIMAL(18, 3) NOT NULL,
+    `totalDpAmount` DECIMAL(18, 3) NOT NULL,
+    `totalTax` DECIMAL(18, 3) NOT NULL,
+    `totalBv` INTEGER NOT NULL,
+    `deliveredAt` DATETIME(3) NULL,
+    `cancelledAt` DATETIME(3) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `createdBy` INTEGER NULL,
+    `updatedAt` DATETIME(3) NOT NULL,
+    `updatedBy` INTEGER NULL,
+
+    UNIQUE INDEX `order_place_orderNumber_key`(`orderNumber`),
+    INDEX `order_place_customerId_idx`(`customerId`),
+    INDEX `order_place_customerId_orderDate_idx`(`customerId`, `orderDate`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `order_details` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `orderId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `productName` VARCHAR(191) NOT NULL,
+    `sku` VARCHAR(191) NOT NULL,
+    `price` DECIMAL(18, 3) NOT NULL,
+    `quantity` INTEGER NOT NULL,
+    `bv` INTEGER NOT NULL,
+    `totalPrice` DECIMAL(18, 3) NOT NULL,
+
+    INDEX `order_details_orderId_idx`(`orderId`),
+    INDEX `order_details_productId_idx`(`productId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `order_address` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `orderId` INTEGER NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NOT NULL,
+    `addressLine` VARCHAR(191) NOT NULL,
+    `city` VARCHAR(191) NOT NULL,
+    `state` VARCHAR(191) NOT NULL,
+    `pincode` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `order_address_orderId_key`(`orderId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `user_addresses` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NOT NULL,
+    `addressLine` VARCHAR(191) NOT NULL,
+    `city` VARCHAR(191) NOT NULL,
+    `state` VARCHAR(191) NOT NULL,
+    `pincode` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(191) NOT NULL DEFAULT 'India',
+    `isDefault` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `carts` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `quantity` INTEGER NOT NULL DEFAULT 1,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `carts_userId_productId_key`(`userId`, `productId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `reviews` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `rating` INTEGER NOT NULL DEFAULT 5,
+    `comment` TEXT NULL,
+    `images` TEXT NULL,
+    `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -525,6 +717,51 @@ ALTER TABLE `reward_history` ADD CONSTRAINT `reward_history_userId_fkey` FOREIGN
 
 -- AddForeignKey
 ALTER TABLE `reward_history` ADD CONSTRAINT `reward_history_rewardId_fkey` FOREIGN KEY (`rewardId`) REFERENCES `reward_config`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `subcategories` ADD CONSTRAINT `subcategories_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `brand` ADD CONSTRAINT `brand_subcategoryId_fkey` FOREIGN KEY (`subcategoryId`) REFERENCES `subcategories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `brand` ADD CONSTRAINT `brand_categoriesId_fkey` FOREIGN KEY (`categoriesId`) REFERENCES `categories`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `product` ADD CONSTRAINT `product_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `categories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `product` ADD CONSTRAINT `product_subcategoryId_fkey` FOREIGN KEY (`subcategoryId`) REFERENCES `subcategories`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `product` ADD CONSTRAINT `product_brandId_fkey` FOREIGN KEY (`brandId`) REFERENCES `brand`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `order_place` ADD CONSTRAINT `order_place_customerId_fkey` FOREIGN KEY (`customerId`) REFERENCES `users`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `order_details` ADD CONSTRAINT `order_details_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `order_place`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `order_details` ADD CONSTRAINT `order_details_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `product`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `order_address` ADD CONSTRAINT `order_address_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `order_place`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `user_addresses` ADD CONSTRAINT `user_addresses_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `carts` ADD CONSTRAINT `carts_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `carts` ADD CONSTRAINT `carts_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `reviews` ADD CONSTRAINT `reviews_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `reviews` ADD CONSTRAINT `reviews_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `_ConfigRoyalPlans` ADD CONSTRAINT `_ConfigRoyalPlans_A_fkey` FOREIGN KEY (`A`) REFERENCES `config_table`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

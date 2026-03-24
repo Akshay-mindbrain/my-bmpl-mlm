@@ -4,7 +4,7 @@ import packagerouter from "./Packages/package.routes";
 import userRouter from "./Users/Users.routes";
 import kycrouter from "./KYC/Kyc.routes";
 import planPurchaseRouter from "./PlanPurchase/PlanPurchase.routes";
-import systemIncomeRouter from "./system_income/systemIncome.routes";
+import systemIncomeRouter from "./systemincome/systemincome.route";
 import walletRouter from "./wallet/wallet.routes";
 import setupRouter from "./setup/setup.routes";
 import orderRouter from "./Order/order.routes";
