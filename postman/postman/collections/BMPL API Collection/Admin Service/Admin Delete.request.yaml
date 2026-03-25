@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/admin/delete/{{admin_id}}"
+method: DELETE
+order: 9000

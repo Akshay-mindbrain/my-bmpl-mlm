@@ -1,0 +1,12 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/user/status/{{user_id}}"
+method: PUT
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "status": "ACTIVE"
+    }
+order: 11000

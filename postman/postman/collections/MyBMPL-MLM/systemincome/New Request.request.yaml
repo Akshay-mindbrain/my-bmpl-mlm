@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{base_url}}{{systemincome module}}/getincome"
+method: GET
+body:
+  type: json
+  content: "// {\r
+
+    //   \"period\": \"LAST_7_DAYS\"\r
+
+    // }\r
+
+    \r
+
+    {\r
+
+    \  \"fromDate\": \"2026-02-01\",\r
+
+    \  \"toDate\": \"2026-02-25\"\r
+
+    }"
+order: 1000

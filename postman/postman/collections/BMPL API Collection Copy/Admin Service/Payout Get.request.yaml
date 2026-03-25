@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/payout/get"
+method: GET
+order: 35000

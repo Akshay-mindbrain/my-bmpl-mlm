@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/income/generate"
+method: POST
+order: 30000

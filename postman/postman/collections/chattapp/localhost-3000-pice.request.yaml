@@ -1,0 +1,5 @@
+$kind: http-request
+name: localhost:3000/pice
+url: localhost:3000/pice
+method: GET
+order: 4000

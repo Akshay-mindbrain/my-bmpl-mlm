@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/admin/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "firstName": "Admin",
+      "mobile": "8888888888",
+      "email": "admin2@example.com",
+      "username": "admin2",
+      "password": "Password@123",
+      "adminType": "ADMIN"
+    }
+order: 4000

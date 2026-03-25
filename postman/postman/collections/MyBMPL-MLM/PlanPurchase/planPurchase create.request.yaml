@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{base_url}}{{planpurchase_module}}/"
+method: POST
+body:
+  type: json
+  content: "\r
+
+    {\r
+
+    \  \"BV\": 400,\r
+
+    \  \"dp_amount\": 500,\r
+
+    \  \"plan_amount\": 2000,\r
+
+    \  \"payment_mode\": \"UPI\",\r
+
+    \  \"payment_proof_uri\":
+    \"https://dummy-proof.s3.amazonaws.com/payment1.png\",\r
+
+    \  \"purchase_type\": \"FIRST_PURCHASE\",\r
+
+    \  \"plan_id\":\"519e2fb9-10a2-11f1-9fed-24b2b914256a\"\r
+
+    }\r\n"
+order: 1000

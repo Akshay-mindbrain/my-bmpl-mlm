@@ -1,0 +1,11 @@
+$kind: collection
+description: Exported collection for BMPL user/admin services. Auth uses
+  HTTP-only cookies, so login requests must run first on the same base URL.
+variables:
+  user_base_url: http://localhost:3001
+  admin_base_url: http://localhost:3000
+  user_id: "1"
+  admin_id: "1"
+  plan_id: replace-with-plan-id
+  purchase_id: "1"
+  kyc_id: "1"

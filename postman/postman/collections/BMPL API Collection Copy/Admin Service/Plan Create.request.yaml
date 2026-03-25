@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/plan/createplan"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "planName": "Pro",
+      "Description": "Pro plan",
+      "BV": 200,
+      "price": 2000,
+      "dp_amount": 1000,
+      "features": ["Feature 1", "Feature 2"]
+    }
+order: 13000

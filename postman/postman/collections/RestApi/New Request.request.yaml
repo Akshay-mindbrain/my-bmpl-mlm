@@ -1,0 +1,17 @@
+$kind: http-request
+url: http://localhsot:3001/api/post-data
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"name\":\"om prakash lenka\",\r
+
+    \    \"email\":\"kuna@gmail.com\",\r
+
+    \    \"age\":19,\r
+
+    \    \"address\":\"jajpur\"\r
+
+    }"
+order: 1000

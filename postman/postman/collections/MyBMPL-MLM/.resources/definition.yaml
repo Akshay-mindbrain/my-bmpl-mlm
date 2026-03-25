@@ -1,0 +1,9 @@
+$kind: collection
+variables:
+  base_url: ""
+  module_variable: ""
+  user_module: ""
+  planpurchase_module: ""
+  kyc_module: ""
+  systemincome module: ""
+  wallet: ""

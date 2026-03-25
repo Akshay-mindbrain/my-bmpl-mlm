@@ -1,0 +1,4 @@
+$kind: http-request
+url: http://localhost:8090/api/admin/payout
+method: POST
+order: 1000

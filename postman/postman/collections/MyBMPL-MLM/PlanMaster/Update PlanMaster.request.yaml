@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{base_url}}{{module_variable}}/4724c166-95c1-487f-be22-ad145f34db17"
+method: PUT
+body:
+  type: json
+  content: "{\r\n    \"BV\":1750\r\n}"
+order: 4000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: New Request
+url: localhost:8000/mens/66f91f95202c9c09b04b3428
+method: GET
+order: 3000

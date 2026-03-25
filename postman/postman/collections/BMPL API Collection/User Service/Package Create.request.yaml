@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{user_base_url}}/v1/package"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |-
+    {
+      "planName": "Starter",
+      "Description": "Starter plan",
+      "BV": 100,
+      "price": 1000,
+      "dp_amount": 500,
+      "status": "ACTIVE"
+    }
+order: 14000

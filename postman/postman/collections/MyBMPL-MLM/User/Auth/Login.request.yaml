@@ -1,0 +1,13 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/login"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \ \"mobile\": \"9282963149\",\r
+
+    \  \"password\": \"Password@123\"\r
+
+    }"
+order: 1000

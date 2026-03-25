@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{base_url}}{{user_module}}/"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"firstName\": \"User\",\r
+
+    \  \"lastName\": \"SHARE_PURCHASE_test\",\r
+
+    \  \"email\": \"usert@example.com\",\r
+
+    \  \"mobile\": \"8888888803\",\r
+
+    \  \"password\": \"Password@123\",\r
+
+    \  \"sponsorId\": 2,\r
+
+    \  \"legPosition\": \"RIGHT\",\r
+
+    \  \"useShare\": true\r
+
+    }\r\n"
+order: 8000

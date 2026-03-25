@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{base_url}}{{module_variable}}/"
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"planName\": \"Platinum Plan\",\r
+
+    \  \"Description\": \"High income premium plan\",\r
+
+    \  \"BV\": 750,\r
+
+    \  \"price\": 7500,\r
+
+    \  \"dp_amount\": 1500\r
+
+    }\r
+
+    \r\n"
+order: 1000

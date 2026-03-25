@@ -1,0 +1,4 @@
+$kind: http-request
+url: "{{admin_base_url}}/v1/user/getuser"
+method: GET
+order: 10000
