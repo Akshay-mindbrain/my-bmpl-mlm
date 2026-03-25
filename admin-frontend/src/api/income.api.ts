@@ -80,6 +80,35 @@ export const getDateWiseIncomeApi = async (
     return data;
     };
 
+// Generate daily income
+export const generateIncomeApi = async () => {
+    let res = await fetch(`${BASE_URL}/v1/income/generate`, {
+        method: "POST",
+        credentials: "include",
+    });
+
+    if (res.status === 401) {
+        try {
+            await refreshTokeApi();
+            res = await fetch(`${BASE_URL}/v1/income/generate`, {
+                method: "POST",
+                credentials: "include",
+            });
+        } catch (error) {
+            window.location.href = "/login";
+            throw new Error("Session expired");
+        }
+    }
+
+    const data = await res.json();
+
+    if (!res.ok) {
+        throw new Error(data?.msg || "Failed to generate income");
+    }
+
+    return data;
+};
+
     //batch wise detailed income
     export const getBatchIncomeApi = async (
     batchId: string,

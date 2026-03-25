@@ -16,13 +16,24 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAllIncome } from "../../hooks/Income/useAllIncome";
+import { useGenerateIncome } from "../../hooks/Income/useGenerateIncome";
+import { Button } from "@mui/material";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 function Allincome() {
   const navigate = useNavigate();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const { data, isLoading, isError } = useAllIncome(page + 1, rowsPerPage);
+  const { data, isLoading, isError, refetch } = useAllIncome(page + 1, rowsPerPage);
+  const { generateIncome, isGenerating } = useGenerateIncome();
+
+  const handleGenerateIncome = async () => {
+    if (window.confirm("Are you sure you want to generate income for all members? This should typically be done once a day.")) {
+      await generateIncome();
+      refetch(); // Refresh the list after generation
+    }
+  };
 
   // ✅ Extract correctly from backend response
   const incomeList = data?.data?.data ?? [];
@@ -46,9 +57,31 @@ function Allincome() {
 
   return (
     <Box p={3}>
-      <Typography variant="h5" fontWeight={600} mb={2}>
-        All Income (Date Wise)
-      </Typography>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h5" fontWeight={600}>
+          All Income (Date Wise)
+        </Typography>
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<PlayArrowIcon />}
+          onClick={handleGenerateIncome}
+          disabled={isGenerating}
+          sx={{
+            background: "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
+            color: "white",
+            fontWeight: "bold",
+            padding: "8px 24px",
+            borderRadius: "25px",
+            boxShadow: "0 3px 5px 2px rgba(255, 105, 135, .3)",
+            "&:hover": {
+              background: "linear-gradient(45deg, #FF8E53 30%, #FE6B8B 90%)",
+            }
+          }}
+        >
+          {isGenerating ? "Processing..." : "Process Daily Income"}
+        </Button>
+      </Box>
 
       <TableContainer component={Paper} elevation={3}>
         <Table>

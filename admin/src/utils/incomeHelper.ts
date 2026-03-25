@@ -54,10 +54,9 @@ export const getWalletCarryBV = async (userId: number) => {
 
 // Eligible users for income generation
 export const elegibleForincome = async () => {
-  // 1. Get all users who have pending BV (is_income_generated = NO)
-  const usersWithVolume = await prisma.planPurchase.findMany({
+  // 1. Get all users who have pending volume in the BV ledger (is_income_generated = NO)
+  const usersWithVolume = await prisma.bVLedger.findMany({
     where: {
-      status: "APPROVED",
       is_income_generated: "NO",
     },
     select: { user_id: true },
@@ -69,7 +68,6 @@ export const elegibleForincome = async () => {
   for (const item of usersWithVolume) {
     const userId = item.user_id;
 
-    // 2. Check if the user is ACTIVE and has their own approved purchase
     const user = await prisma.user.findUnique({
       where: { id: userId, status: "ACTIVE" },
       include: {
@@ -79,14 +77,17 @@ export const elegibleForincome = async () => {
       }
     });
 
-    if (!user || user.planPurchases.length === 0) continue;
+    if (!user) continue;
 
-    // 3. 1:1 Direct Qualification Check
-    // EXCEPTION: Root user (ID: 1) is always qualified if they have an approved purchase
+    // 3. Qualification Check
+    // EXCEPTION: Root user (ID: 1) is always qualified
     if (userId === 1) {
       qualifiedUsers.push({ user_id: userId });
       continue;
     }
+
+    // Standard user needs their own approved purchase
+    if (user.planPurchases.length === 0) continue;
 
     // Find direct referrals sponsored by this user
     const directReferrals = await prisma.user.findMany({

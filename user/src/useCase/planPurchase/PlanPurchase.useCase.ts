@@ -92,6 +92,8 @@ if (user.sponsorId) {
 }
 
     if (isAutoApproval && data.purchase_type !== "SHARE_PURCHASE") {
+      // 🔹 Income generation moved to daily admin trigger.
+      // 🔹 createBVLedgerForLineageRaw is still required to record the BV volume.
       await createBVLedgerForLineageRaw(
         {
           purchase_id: purchase.id,
@@ -102,20 +104,6 @@ if (user.sponsorId) {
         },
         tx,
       );
-
-      // Process binary matching income (non-blocking)
-      try {
-        await processMatchingIncomeForUplines(userId, tx);
-      } catch (e) {
-        console.error("[Income] Binary matching income failed:", e);
-      }
-
-      // Process royalty income (non-blocking)
-      try {
-        await processRoyaltyIncome(purchase.id, tx);
-      } catch (e) {
-        console.error("[Income] Royalty income failed:", e);
-      }
     }
 
     return purchase;
