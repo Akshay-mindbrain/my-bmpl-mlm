@@ -1,6 +1,7 @@
 import express from "express";
 import * as planPurchaseController from "../../../controllers/PlanPurchase.Controller";
 import * as sharePurchaseController from "../../../controllers/SharePurchase.Controller";
+import { getMyIncomeHistory } from "../../../controllers/Income.Controller";
 import validateRequest from "@/middleware/validate-request";
 import {
   planPurchaseCreateSchema,
@@ -65,6 +66,14 @@ planPurchaseRouter.post(
   "/accept-share",
   verifyUser,
   sharePurchaseController.acceptPlan,
+);
+
+/* ================= INCOME ROUTES ================= */
+
+planPurchaseRouter.get(
+  "/income/my-history",
+  verifyUser,
+  getMyIncomeHistory,
 );
 
 export default planPurchaseRouter;

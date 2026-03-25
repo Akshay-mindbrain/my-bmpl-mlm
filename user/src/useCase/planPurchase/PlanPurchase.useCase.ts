@@ -13,6 +13,7 @@ import { createBVLedgerForLineageRaw } from "@/data/repositories/BVledger.Reposi
 import prisma from "@/prisma-client";
 import { createRoyalQualifierService } from "../RoyalQualifier/royalQualifier.useCase";
 import { processRoyaltyIncome } from "../system_income/royaltyIncome.useCase";
+import { processMatchingIncomeForUplines } from "../system_income/processMatchingIncome.useCase";
 
 export const createPlanPurchase = async (
   userId: number,
@@ -85,16 +86,9 @@ export const createPlanPurchase = async (
     });
 if (user.sponsorId) {
   const sponsor = await userRepo.getUserById(user.sponsorId);
-
-  if (!sponsor) {
-    throw AppError.notFound("Sponsor not found");
+  if (sponsor) {
+    await createRoyalQualifierService(sponsor.id, userId, tx);
   }
-
-  await createRoyalQualifierService(
-    sponsor.id,
-    userId,
-    tx,
-  );
 }
 
     if (isAutoApproval && data.purchase_type !== "SHARE_PURCHASE") {
@@ -109,8 +103,19 @@ if (user.sponsorId) {
         tx,
       );
 
-      // 🏆 PROCESS ROYALTY INCOME 🏆
-      await processRoyaltyIncome(purchase.id, tx);
+      // Process binary matching income (non-blocking)
+      try {
+        await processMatchingIncomeForUplines(userId, tx);
+      } catch (e) {
+        console.error("[Income] Binary matching income failed:", e);
+      }
+
+      // Process royalty income (non-blocking)
+      try {
+        await processRoyaltyIncome(purchase.id, tx);
+      } catch (e) {
+        console.error("[Income] Royalty income failed:", e);
+      }
     }
 
     return purchase;

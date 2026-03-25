@@ -92,7 +92,7 @@ export const getIncomeGenarateRepo = async () => {
           left_carryforward_bv: newLeftCarry,
           right_carryforward_bv: newRightCarry,
           matched_bv: { increment: matchedBv },
-          total_income: { increment: netIncome },
+          total_income: { increment: grossIncome },
         },
         create: {
           user_id: userId,
@@ -101,7 +101,7 @@ export const getIncomeGenarateRepo = async () => {
           left_carryforward_bv: newLeftCarry,
           right_carryforward_bv: newRightCarry,
           matched_bv: matchedBv,
-          total_income: netIncome,
+          total_income: grossIncome,
         },
       });
 
@@ -109,7 +109,7 @@ export const getIncomeGenarateRepo = async () => {
         data: {
           user_id: userId,
           type: "INCOME",
-          amount: netIncome,
+          amount: grossIncome,
           reference_id: incomeEntry.id,
           message: "Binary income created",
           status: "ACTIVE",

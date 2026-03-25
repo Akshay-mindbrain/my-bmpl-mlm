@@ -32,7 +32,7 @@ export default function MyPlans() {
     const [directs, setDirects] = useState<any[]>([]);
     const [isDirectsLoading, setIsDirectsLoading] = useState(false);
     const [sharing, setSharing] = useState(false);
-    
+
     const [selectedShare, setSelectedShare] = useState<any>(null);
     const [selectedDirect, setSelectedDirect] = useState<string>('');
     const [openModal, setOpenModal] = useState(false);
@@ -50,7 +50,7 @@ export default function MyPlans() {
     });
 
     const [searchTerm, setSearchTerm] = useState('');
-    const filteredDirects = eligibleDirects.filter(d => 
+    const filteredDirects = eligibleDirects.filter(d =>
         (d.memberId && d.memberId.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (`${d.firstName} ${d.lastName}`).toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -118,28 +118,28 @@ export default function MyPlans() {
                 <Grid container spacing={3}>
                     {purchaseData?.data?.purchases?.map((p: any) => (
                         <Grid item xs={12} md={6} lg={4} key={p.id}>
-                            <Card sx={{ 
-                                borderRadius: 3, 
+                            <Card sx={{
+                                borderRadius: 3,
                                 boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
                                 height: '100%',
                                 display: 'flex',
                                 flexDirection: 'column'
                             }}>
-                                <Box sx={{ 
-                                    p: 2, 
-                                    bgcolor: p.status === 'APPROVED' ? 'success.main' : 'warning.main', 
-                                    color: 'white', 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
-                                    alignItems: 'center' 
+                                <Box sx={{
+                                    p: 2,
+                                    bgcolor: p.status === 'APPROVED' ? 'success.main' : 'warning.main',
+                                    color: 'white',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
                                 }}>
                                     <Typography variant="subtitle2" fontWeight={700}>
                                         {p.purchase_type.replace(/_/g, ' ')}
                                     </Typography>
-                                    <Chip 
-                                        size="small" 
-                                        label={p.status} 
-                                        sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 700 }} 
+                                    <Chip
+                                        size="small"
+                                        label={p.status}
+                                        sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 700 }}
                                     />
                                 </Box>
                                 <CardContent sx={{ flexGrow: 1 }}>
@@ -160,18 +160,18 @@ export default function MyPlans() {
                                             <Typography variant="body2" color="text.secondary">BV Points</Typography>
                                             <Typography variant="body2" fontWeight={700} color="secondary.main">{p.BV}</Typography>
                                         </Box>
-                                        
+
                                         {p.plan?.features && (
                                             <Box mt={1}>
                                                 <Typography variant="caption" fontWeight={700} color="text.secondary" display="block" mb={0.5}>
                                                     FEATURES:
                                                 </Typography>
                                                 <Stack direction="row" flexWrap="wrap" gap={0.5}>
-                                                    {typeof p.plan.features === 'string' 
+                                                    {typeof p.plan.features === 'string'
                                                         ? JSON.parse(p.plan.features).map((f: string, i: number) => (
                                                             <Chip key={i} label={f} size="small" variant="outlined" />
                                                         ))
-                                                        : Array.isArray(p.plan.features) 
+                                                        : Array.isArray(p.plan.features)
                                                             ? p.plan.features.map((f: string, i: number) => (
                                                                 <Chip key={i} label={f} size="small" variant="outlined" />
                                                             ))
@@ -180,32 +180,32 @@ export default function MyPlans() {
                                                 </Stack>
                                             </Box>
                                         )}
-                                        
+
                                         <Divider sx={{ my: 1 }} />
                                         <Box display="flex" justifyContent="space-between" alignItems="center">
                                             <Typography variant="caption" color="text.secondary">
                                                 Purchased: {new Date(p.createdAt).toLocaleDateString()}
                                             </Typography>
                                             {p.purchase_type === "SHARE_PURCHASE" && (
-                                                <Chip 
-                                                    size="small" 
-                                                    label={p.share_status} 
-                                                    color={p.share_status === 'AVAILABLE' ? "success" : "default"} 
+                                                <Chip
+                                                    size="small"
+                                                    label={p.share_status}
+                                                    color={p.share_status === 'AVAILABLE' ? "success" : "default"}
                                                     variant="outlined"
                                                 />
                                             )}
                                         </Box>
                                     </Stack>
                                 </CardContent>
-                                
+
                                 {p.purchase_type === "SHARE_PURCHASE" && p.share_status === "AVAILABLE" && p.status === "APPROVED" && (
                                     <Box sx={{ p: 2, pt: 0 }}>
-                                        <Button 
-                                            fullWidth 
-                                            variant="contained" 
+                                        <Button
+                                            fullWidth
+                                            variant="contained"
                                             onClick={() => handleShareClick(p)}
-                                            sx={{ 
-                                                borderRadius: 2, 
+                                            sx={{
+                                                borderRadius: 2,
                                                 fontWeight: 800,
                                                 background: designConfig.colors.gradients.primary
                                             }}
@@ -238,7 +238,7 @@ export default function MyPlans() {
                                 placeholder="e.g. USER-1002"
                             />
                         </FormControl>
-                        
+
                         <FormControl fullWidth>
                             <InputLabel id="select-direct-label">Select Direct Member</InputLabel>
                             <Select
@@ -272,9 +272,9 @@ export default function MyPlans() {
                 </DialogContent>
                 <DialogActions sx={{ p: 3 }}>
                     <Button onClick={() => setOpenModal(false)} disabled={sharing} color="inherit">Cancel</Button>
-                    <Button 
-                        variant="contained" 
-                        onClick={handleConfirmShare} 
+                    <Button
+                        variant="contained"
+                        onClick={handleConfirmShare}
                         disabled={sharing || !selectedDirect}
                         sx={{ px: 3, fontWeight: 700 }}
                     >

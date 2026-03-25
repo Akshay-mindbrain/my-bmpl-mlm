@@ -3,6 +3,7 @@ import prisma from "@/prisma-client";
 import AppError from "@/errors/AppError";
 import { createBVLedgerForLineageRaw } from "@/data/repositories/BVledger.Repository";
 import { processRoyaltyIncome } from "../system_income/royaltyIncome.useCase";
+import { processMatchingIncomeForUplines } from "../system_income/processMatchingIncome.useCase";
 
 export const approvePlanPurchase = async (
   purchaseId: number,
@@ -42,10 +43,21 @@ export const approvePlanPurchase = async (
         },
         tx,
       );
+
+      // Process binary matching income for all uplines (non-blocking)
+      try {
+        await processMatchingIncomeForUplines(purchase.user_id, tx);
+      } catch (e) {
+        console.error("[Income] Binary matching income failed:", e);
+      }
     }
 
-    // 🏆 PROCESS ROYALTY INCOME 🏆
-    await processRoyaltyIncome(purchaseId, tx);
+    // Process royalty income (non-blocking)
+    try {
+      await processRoyaltyIncome(purchaseId, tx);
+    } catch (e) {
+      console.error("[Income] Royalty income failed:", e);
+    }
 
     return updatedPurchase;
   }
@@ -83,10 +95,21 @@ export const approvePlanPurchase = async (
         },
         trx,
       );
+
+      // Process binary matching income for all uplines (non-blocking)
+      try {
+        await processMatchingIncomeForUplines(purchase.user_id, trx);
+      } catch (e) {
+        console.error("[Income] Binary matching income failed:", e);
+      }
     }
 
-    // 🏆 PROCESS ROYALTY INCOME 🏆
-    await processRoyaltyIncome(purchaseId, trx);
+    // Process royalty income (non-blocking)
+    try {
+      await processRoyaltyIncome(purchaseId, trx);
+    } catch (e) {
+      console.error("[Income] Royalty income failed:", e);
+    }
 
     return updatedPurchase;
   });

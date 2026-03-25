@@ -39,6 +39,7 @@ const Sidebar = () => {
     { name: "My Plans", path: "/my-plans", icon: <RedeemIcon /> },
     ...(!hasFirstPurchase ? [{ name: "Received Plans", path: "/received-plans", icon: <InboxIcon /> }] : []),
     { name: "My Wallets", path: "/my-wallet", icon: <AccountBalanceWalletIcon /> },
+    { name: "Income History", path: "/income-history", icon: <AccountBalanceWalletIcon /> },
     { name: "Genealogy", path: "/genealogy", icon: <AccountTreeIcon /> },
     { name: "Invite & Earn", path: "/invite-earn", icon: <ShareIcon /> },
     { name: "Profile", path: "/profile", icon: <PersonIcon /> },

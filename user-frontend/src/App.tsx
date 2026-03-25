@@ -51,6 +51,7 @@ const Order = lazy(() => import("./modules/order/Order"));
 const OrderTracking = lazy(() => import("./modules/order/OrderTracking"));
 const Plan = lazy(() => import("./modules/plan/plan"));
 const ReceivedPlans = lazy(() => import("./modules/plan/ReceivedPlans"));
+const IncomeHistory = lazy(() => import("./modules/income/IncomeHistory"));
 const Profile = lazy(() => import("./modules/profile/Profile"));
 const Category = lazy(() => import("./modules/shop/Category"));
 const CategoryProducts = lazy(() => import("./modules/shop/CategoryProducts"));
@@ -133,6 +134,7 @@ function App() {
                 <Route path="/plan" element={<Plan />} />
                 <Route path="/my-plans" element={<MyPlans />} />
                 <Route path="/received-plans" element={<ReceivedPlans />} />
+                <Route path="/income-history" element={<IncomeHistory />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/orders" element={<Order />} />
                 <Route path="/profile" element={<Profile />} />

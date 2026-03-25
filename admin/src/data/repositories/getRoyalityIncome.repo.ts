@@ -101,14 +101,14 @@ export const generateRoyaltyIncomeForAll = async () => {
           await tx.wallet.update({
             where: { user_id: parentId },
             data: {
-              total_income: { increment: netIncome },
+              total_income: { increment: grossIncome },
             },
           });
         } else {
           await tx.wallet.create({
             data: {
               user_id: parentId,
-              total_income: netIncome,
+              total_income: grossIncome,
             },
           });
         }
@@ -117,7 +117,7 @@ export const generateRoyaltyIncomeForAll = async () => {
           data: {
             user_id: parentId,
             type: "INCOME",
-            amount: netIncome,
+            amount: grossIncome,
             reference_id: royaltyEntry.id,
             message: "Royalty income credited",
             status: "ACTIVE",
