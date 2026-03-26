@@ -22,10 +22,6 @@ adminAuthRouter.post(
   createAdmincontroller,
 );
 
-adminAuthRouter.post(
-  "/login",
-  validate(adminLoginSchema),
-  loginController,
-);
+adminAuthRouter.post("/login", validate(adminLoginSchema), loginController);
 adminAuthRouter.post("/refresh", RegenAccessToken);
 adminAuthRouter.post("/logout", logoutController);

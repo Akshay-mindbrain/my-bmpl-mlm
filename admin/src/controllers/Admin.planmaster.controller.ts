@@ -36,7 +36,6 @@ export const createPlancontroller = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getplancontroller = async (_req: Request, res: Response) => {
   try {
     const plan = await getPlanUsecase();

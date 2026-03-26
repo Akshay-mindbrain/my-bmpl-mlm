@@ -30,7 +30,9 @@ export const loginUsecase = async (identifier: string, password: string) => {
     }
 
     if (existAdmin.status === "0") {
-      throw AppError.forbidden("Your account is inactive. Please contact support.");
+      throw AppError.forbidden(
+        "Your account is inactive. Please contact support.",
+      );
     }
 
     const isPassword = await bcrypt.compare(password, existAdmin.password);
@@ -52,7 +54,9 @@ export const loginUsecase = async (identifier: string, password: string) => {
     if (error instanceof CustomError) {
       throw error;
     }
-    throw AppError.internal(error.message || "Something went wrong during login");
+    throw AppError.internal(
+      error.message || "Something went wrong during login",
+    );
   }
 };
 
@@ -71,7 +75,9 @@ export const genAcessUsecase = async (refreshToken: string) => {
     }
 
     if (admin.status === "0") {
-      throw AppError.forbidden("Your account is inactive. Please contact support.");
+      throw AppError.forbidden(
+        "Your account is inactive. Please contact support.",
+      );
     }
 
     if (admin.refreshToken !== refreshToken) {

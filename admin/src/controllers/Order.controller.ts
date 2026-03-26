@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
-import { getAllOrdersUsecase, getOrderByIdUsecase, updateOrderStatusUsecase } from "@/useCase/Order.usecase";
+import {
+  getAllOrdersUsecase,
+  getOrderByIdUsecase,
+  updateOrderStatusUsecase,
+} from "@/useCase/Order.usecase";
 import AppError from "@/errors/AppError";
 
 export const getAllOrdersController = async (req: Request, res: Response) => {
@@ -24,7 +28,10 @@ export const getOrderByIdController = async (req: Request, res: Response) => {
   }
 };
 
-export const updateOrderStatusController = async (req: Request, res: Response) => {
+export const updateOrderStatusController = async (
+  req: Request,
+  res: Response,
+) => {
   try {
     const id = Number(req.params.id);
     const { status } = req.body;

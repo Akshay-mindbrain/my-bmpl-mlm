@@ -119,23 +119,23 @@ export const getDashboardStatsRepo = async () => {
     }),
 
     prisma.orderPlace.count({
-      where: { createdAt: { gte: today, lt: tomorrow } }
+      where: { createdAt: { gte: today, lt: tomorrow } },
     }),
 
     prisma.orderPlace.count({
       where: {
         orderStatus: "DELIVERED",
-        deliveredAt: { gte: today, lt: tomorrow }
-      }
+        deliveredAt: { gte: today, lt: tomorrow },
+      },
     }),
 
     prisma.orderPlace.aggregate({
       _sum: { totalDpAmount: true },
-      where: { createdAt: { gte: today, lt: tomorrow } }
+      where: { createdAt: { gte: today, lt: tomorrow } },
     }),
-    ]);
+  ]);
 
-    return {
+  return {
     totalUsers,
     totalPlans,
     silveribo,
@@ -155,5 +155,5 @@ export const getDashboardStatsRepo = async () => {
     todayNewOrders: orderCountToday,
     todayDeliveredOrders: orderDeliveredToday,
     todayTotalDpAmount: orderDpAmountToday._sum.totalDpAmount?.toNumber() || 0,
-    };
-    };
+  };
+};

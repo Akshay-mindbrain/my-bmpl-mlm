@@ -13,4 +13,4 @@ export const adminRouter = express.Router();
 adminRouter.get("/get", verifyAdmin, getAdmincontroller);
 adminRouter.put("/update/:id", verifyAdmin, updateAdminController);
 adminRouter.delete("/delete/:id", verifyAdmin, deleteAdminController);
-adminRouter.get("/dashboard", dasboardController)
+adminRouter.get("/dashboard", dasboardController);

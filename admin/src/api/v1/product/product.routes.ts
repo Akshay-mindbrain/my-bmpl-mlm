@@ -1,8 +1,10 @@
-
-import { createSkuConfigController, deleteProductController,
-    getProductController,
-    productControlleer,
-    updateProductController, } from "@/controllers/Product.controller";
+import {
+  createSkuConfigController,
+  deleteProductController,
+  getProductController,
+  productControlleer,
+  updateProductController,
+} from "@/controllers/Product.controller";
 import express from "express";
 
 export const productRoutes = express.Router();

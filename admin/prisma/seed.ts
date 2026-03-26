@@ -23,8 +23,8 @@ async function main() {
             "1 level referral income",
             "Basic earning eligibility",
             "Training access",
-            "Dashboard access"
-          ]
+            "Dashboard access",
+          ],
         },
         {
           planName: "Silver Plan",
@@ -37,8 +37,8 @@ async function main() {
             "2 level referral income",
             "Weekly payouts",
             "Higher commission",
-            "Rank eligibility"
-          ]
+            "Rank eligibility",
+          ],
         },
         {
           planName: "Gold Plan",
@@ -51,8 +51,8 @@ async function main() {
             "3 level referral income",
             "Leadership bonus",
             "Faster withdrawals",
-            "Priority support"
-          ]
+            "Priority support",
+          ],
         },
         {
           planName: "Platinum Plan",
@@ -65,9 +65,9 @@ async function main() {
             "5 level referral income",
             "Matching bonus",
             "Monthly rewards",
-            "VIP support"
-          ]
-        }
+            "VIP support",
+          ],
+        },
       ],
     });
 
@@ -77,7 +77,6 @@ async function main() {
   }
 }
 
-main()
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main().finally(async () => {
+  await prisma.$disconnect();
+});

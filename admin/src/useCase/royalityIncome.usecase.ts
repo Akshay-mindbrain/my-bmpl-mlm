@@ -1,5 +1,5 @@
-import { generateRoyaltyIncomeForAll } from "@/data/repositories/getRoyalityIncome.repo";
+// import { generateRoyaltyIncomeForAll } from "@/data/repositories/getRoyalityIncome.repo";
 
-export const roylityincomeUsecase = async () => {
-  return await generateRoyaltyIncomeForAll();
-};
+// export const roylityincomeUsecase = async () => {
+//   return await generateRoyaltyIncomeForAll();
+// };

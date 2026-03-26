@@ -11,9 +11,9 @@ export const getUserTotalBVRepo = async (userId: number) => {
     where: {
       user_id: userId,
       is_income_generated: "NO",
-      purchase_type: "FIRST_PURCHASE"
+      purchase_type: "FIRST_PURCHASE",
     },
-    select: { buyer_leg: true, bv: true }
+    select: { buyer_leg: true, bv: true },
   });
 
   // 2. Get unprocessed REPURCHASE BV for the CURRENT MONTH ONLY
@@ -23,9 +23,9 @@ export const getUserTotalBVRepo = async (userId: number) => {
       user_id: userId,
       is_income_generated: "NO",
       purchase_type: "REPURCHASE",
-      createdAt: { gte: startOfThisMonth }
+      createdAt: { gte: startOfThisMonth },
     },
-    select: { buyer_leg: true, bv: true }
+    select: { buyer_leg: true, bv: true },
   });
 
   const rows = [...firstPurchaseRows, ...repurchaseRows];

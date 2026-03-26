@@ -1,8 +1,8 @@
 import {
-    createCategoriescontroller,
-    deleteCatagorycontroller,
-    getCategories,
-    updateCategorycontroller,
+  createCategoriescontroller,
+  deleteCatagorycontroller,
+  getCategories,
+  updateCategorycontroller,
 } from "@/controllers/category.controller";
 import express from "express";
 export const categoryRouter = express.Router();

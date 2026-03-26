@@ -14,8 +14,8 @@ export const getAllOrdersRepo = async (page: number, limit: number) => {
             firstName: true,
             lastName: true,
             memberId: true,
-          }
-        }
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -42,7 +42,10 @@ export const getOrderByIdRepo = async (id: number) => {
   });
 };
 
-export const updateOrderStatusRepo = async (id: number, status: OrderStatus) => {
+export const updateOrderStatusRepo = async (
+  id: number,
+  status: OrderStatus,
+) => {
   return prisma.orderPlace.update({
     where: { id },
     data: {

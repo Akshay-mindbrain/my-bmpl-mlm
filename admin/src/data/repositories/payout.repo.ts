@@ -15,7 +15,7 @@ export const generatePayoutRepo = async (tx: any) => {
 
   const eligibleUsers = await tx.wallet.findMany({
     where: {
-      total_income: { gt: 100 }, 
+      total_income: { gt: 100 },
       user: {
         status: "ACTIVE",
         kycStatus: "APPROVED",
@@ -67,7 +67,11 @@ export const payoutHistory = async (page: number, limit: number) => {
   };
 };
 
-export const getPayoutDetailsRepo = async (payoutId: number, page: number, limit: number) => {
+export const getPayoutDetailsRepo = async (
+  payoutId: number,
+  page: number,
+  limit: number,
+) => {
   const skip = (page - 1) * limit;
   const [data, total] = await Promise.all([
     prisma.usersPayoutHistory.findMany({
@@ -80,13 +84,13 @@ export const getPayoutDetailsRepo = async (payoutId: number, page: number, limit
             firstName: true,
             lastName: true,
             memberId: true,
-          }
-        }
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
     prisma.usersPayoutHistory.count({
-      where: { payoutId }
+      where: { payoutId },
     }),
   ]);
 

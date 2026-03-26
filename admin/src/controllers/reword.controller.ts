@@ -1,5 +1,8 @@
 import AppError from "@/errors/AppError";
-import { rewardhistoryHistryusecase, rewordUsecase } from "@/useCase/rewards.usecase";
+import {
+  rewardhistoryHistryusecase,
+  rewordUsecase,
+} from "@/useCase/rewards.usecase";
 import { Request, Response } from "express";
 
 export const rewardcontroller = async (req: Request, res: Response) => {

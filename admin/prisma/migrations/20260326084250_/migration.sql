@@ -112,7 +112,7 @@ CREATE TABLE `kyc` (
 
 -- CreateTable
 CREATE TABLE `plans_master` (
-    `id` VARCHAR(191) NOT NULL,
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `planName` VARCHAR(191) NOT NULL,
     `Description` VARCHAR(191) NOT NULL,
     `BV` DECIMAL(18, 3) NOT NULL,
@@ -134,7 +134,7 @@ CREATE TABLE `plans_master` (
 -- CreateTable
 CREATE TABLE `plan_purchases` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `plan_id` VARCHAR(191) NOT NULL,
+    `plan_id` INTEGER NOT NULL,
     `user_id` INTEGER NOT NULL,
     `BV` DECIMAL(18, 3) NOT NULL,
     `dp_amount` DECIMAL(18, 3) NOT NULL,
@@ -181,6 +181,14 @@ CREATE TABLE `config_table` (
 
     UNIQUE INDEX `config_table_plan_config_key_key`(`plan_config_key`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `_ConfigRoyalPlans` (
+    `id` INTEGER NOT NULL,
+    `planid` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`, `planid`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -237,10 +245,10 @@ CREATE TABLE `royal_qualifier` (
 CREATE TABLE `system_income` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
+    `generateIncomeId` INTEGER NOT NULL,
     `matched_bv` INTEGER NOT NULL,
     `income` DECIMAL(18, 3) NOT NULL,
     `message_data` VARCHAR(191) NULL,
-    `generateIncomeId` INTEGER NULL,
     `status` ENUM('ACTIVE', 'INACTIVE') NOT NULL DEFAULT 'ACTIVE',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -249,6 +257,7 @@ CREATE TABLE `system_income` (
 
     INDEX `system_income_createdAt_idx`(`createdAt`),
     INDEX `system_income_user_id_idx`(`user_id`),
+    UNIQUE INDEX `system_income_user_id_generateIncomeId_key`(`user_id`, `generateIncomeId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -353,6 +362,8 @@ CREATE TABLE `generate_income` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `totalIncome` DECIMAL(18, 3) NOT NULL,
     `netincome` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `binaryIncome` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `royaltyIncome` DECIMAL(18, 3) NOT NULL DEFAULT 0,
     `tds` DECIMAL(18, 3) NOT NULL,
     `adminCharges` DECIMAL(18, 3) NOT NULL,
     `generatedDate` DATETIME(3) NOT NULL,
@@ -367,6 +378,7 @@ CREATE TABLE `income_history` (
     `incomeId` INTEGER NOT NULL,
     `userId` INTEGER NOT NULL,
     `totalIncome` DECIMAL(18, 3) NOT NULL,
+    `netincome` DECIMAL(18, 3) NOT NULL,
     `tds` DECIMAL(18, 3) NOT NULL,
     `adminCharges` DECIMAL(18, 3) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -589,15 +601,6 @@ CREATE TABLE `reviews` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- CreateTable
-CREATE TABLE `_ConfigRoyalPlans` (
-    `A` INTEGER NOT NULL,
-    `B` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `_ConfigRoyalPlans_AB_unique`(`A`, `B`),
-    INDEX `_ConfigRoyalPlans_B_index`(`B`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 -- AddForeignKey
 ALTER TABLE `admin_login_history` ADD CONSTRAINT `admin_login_history_adminId_fkey` FOREIGN KEY (`adminId`) REFERENCES `aa_0_admin_db`(`admin_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -659,6 +662,12 @@ ALTER TABLE `plan_purchases` ADD CONSTRAINT `plan_purchases_approved_by_fkey` FO
 ALTER TABLE `plan_purchases` ADD CONSTRAINT `plan_purchases_parent_purchase_id_fkey` FOREIGN KEY (`parent_purchase_id`) REFERENCES `plan_purchases`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `_ConfigRoyalPlans` ADD CONSTRAINT `_ConfigRoyalPlans_id_fkey` FOREIGN KEY (`id`) REFERENCES `config_table`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `_ConfigRoyalPlans` ADD CONSTRAINT `_ConfigRoyalPlans_planid_fkey` FOREIGN KEY (`planid`) REFERENCES `plans_master`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `bv_ledger` ADD CONSTRAINT `bv_ledger_purchase_id_fkey` FOREIGN KEY (`purchase_id`) REFERENCES `plan_purchases`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -686,7 +695,7 @@ ALTER TABLE `royal_qualifier` ADD CONSTRAINT `royal_qualifier_childId_fkey` FORE
 ALTER TABLE `system_income` ADD CONSTRAINT `system_income_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `system_income` ADD CONSTRAINT `system_income_generateIncomeId_fkey` FOREIGN KEY (`generateIncomeId`) REFERENCES `generate_income`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `system_income` ADD CONSTRAINT `system_income_generateIncomeId_fkey` FOREIGN KEY (`generateIncomeId`) REFERENCES `generate_income`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `wallet` ADD CONSTRAINT `wallet_user_id_fkey` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -762,9 +771,3 @@ ALTER TABLE `reviews` ADD CONSTRAINT `reviews_userId_fkey` FOREIGN KEY (`userId`
 
 -- AddForeignKey
 ALTER TABLE `reviews` ADD CONSTRAINT `reviews_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `product`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_ConfigRoyalPlans` ADD CONSTRAINT `_ConfigRoyalPlans_A_fkey` FOREIGN KEY (`A`) REFERENCES `config_table`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `_ConfigRoyalPlans` ADD CONSTRAINT `_ConfigRoyalPlans_B_fkey` FOREIGN KEY (`B`) REFERENCES `plans_master`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

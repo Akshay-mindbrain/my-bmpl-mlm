@@ -529,15 +529,16 @@ model RoyalQualifier {
 //////////////////////////////////////////////////////
 model SystemIncome {
   id      Int  @id @default(autoincrement())
+
   user_id Int
   user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  generateIncomeId Int
+  generateIncome   GenerateIncome @relation(fields: [generateIncomeId], references: [id])
 
   matched_bv   Int
   income       Decimal @db.Decimal(18, 3)
   message_data String?
-
-  generateIncomeId Int?
-  generateIncome   GenerateIncome? @relation(fields: [generateIncomeId], references: [id])
 
   status Status @default(ACTIVE)
 
@@ -547,8 +548,10 @@ model SystemIncome {
   createdBy String?
   updatedBy String?
 
+  @@unique([user_id, generateIncomeId]) // 🔥 FINAL FIX
   @@index([createdAt])
   @@index([user_id])
+
   @@map("system_income")
 }
 
@@ -670,6 +673,8 @@ model GenerateIncome {
   id             Int               @id @default(autoincrement())
   totalIncome    Decimal           @db.Decimal(18, 3)
   netincome      Decimal           @db.Decimal(18, 3) @default(0)
+  binaryIncome   Decimal            @db.Decimal(18, 3) @default(0)
+  royaltyIncome  Decimal              @db.Decimal(18, 3) @default(0)
   tds            Decimal           @db.Decimal(18, 3)
   adminCharges   Decimal           @db.Decimal(18, 3)
   generatedDate  DateTime
@@ -688,6 +693,7 @@ model IncomeHistory {
   userId         Int
   user           User           @relation(fields: [userId], references: [id])
   totalIncome    Decimal        @db.Decimal(18, 3)
+  netincome       Decimal        @db.Decimal(18, 3)
   tds            Decimal        @db.Decimal(18, 3)
   adminCharges   Decimal        @db.Decimal(18, 3)
   createdAt      DateTime       @default(now())

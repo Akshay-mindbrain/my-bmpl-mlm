@@ -9,287 +9,131 @@ import {
 import { getUserTotalBVRepo } from "./Admin.totalbv.repo";
 
 export const getIncomeGenarateRepo = async () => {
-  console.log("Starting Bulk Income Generation...");
-  
-  // ── 0. Initializations & Configurations ───────────────────────────────
-  const eligibleUsers = await elegibleForincome();
-  
-  // DEBUG LINE for User 1
-  const user1 = await prisma.user.findUnique({ where: { id: 1 }, include: { planPurchases: { where: { status: "APPROVED" } } } });
-  const user1Ledger = await prisma.bVLedger.findFirst({ where: { user_id: 1, is_income_generated: "NO" } });
-  console.log("DEBUG: User 1 - Found:", !!user1, "Approved Plans:", user1?.planPurchases.length, "Pending BV:", !!user1Ledger);
-  console.log("Eligible Users list:", eligibleUsers.map(u => u.user_id));
-  const incomePercentage = await getIncomePercentage();
-  const royaltyPercentage = await getRoyalityPercentage();
-  const { tds, admincharges } = await getTDS();
+  console.log("🚀 Income Generation Started...");
 
-  const config = await prisma.config.findFirst();
-  const royalQualifierPlans = config 
-    ? await prisma.configRoyalPlan.findMany({ where: { id: config.id } })
-    : [];
-
-  const generateIncomeEntry = await prisma.generateIncome.create({
-    data: {
-      totalIncome: 0,
-      netincome: 0,
-      tds: 0,
-      adminCharges: 0,
-      generatedDate: new Date(),
-    },
-  });
-
-  let totalGrandGross = 0;
-  let totalGrandTds = 0;
-  let totalGrandAdmin = 0;
-  let totalGrandNet = 0;
-
-  // Track results per user for the response
-  const userResults = new Map<number, any>();
-
-  const getOrCreateUserResult = (userId: number) => {
-    if (!userResults.has(userId)) {
-      userResults.set(userId, {
-        userId,
+  return prisma.$transaction(async (tx) => {
+    const eligibleUsers = await elegibleForincome();
+    const incomePercentage = await getIncomePercentage();
+    const royaltyPercentage = await getRoyalityPercentage();
+    const { tds, admincharges } = await getTDS();
+    const batch = await tx.generateIncome.create({
+      data: {
+        totalIncome: 0,
         binaryIncome: 0,
         royaltyIncome: 0,
-        totalGross: 0,
-        totalNet: 0,
-        matchedBv: 0
+        netincome: 0,
+        tds: 0,
+        adminCharges: 0,
+        generatedDate: new Date(),
+      },
+    });
+
+    let totalBinary = 0;
+    let totalRoyalty = 0;
+    let totalTds = 0;
+    let totalAdmin = 0;
+    let totalNet = 0;
+
+    const userIncomeMap = new Map<
+      number,
+      {
+        binary: number;
+        royalty: number;
+        netBinary: number;
+        netRoyality: number;
+        tds: number;
+        admin: number;
+      }
+    >();
+
+    // ================= BINARY =================
+    for (const u of eligibleUsers) {
+      const userId = u.user_id;
+
+      const { leftBV, rightBV } = await getUserTotalBVRepo(userId);
+
+      const wallet = await tx.wallet.findUnique({
+        where: { user_id: userId },
       });
-    }
-    return userResults.get(userId);
-  };
 
-  // ── 1. Royalty Income Processing ──────────────────────────────────────
-  console.log("Processing Royalty Income...");
-  const pendingRoyaltyPurchases = await prisma.planPurchase.findMany({
-    where: {
-      status: "APPROVED",
-      is_income_generated: "NO",
-    },
-    include: {
-      user: true,
-      plan: true,
-    },
-  });
+      const prevTotalLeft = wallet?.total_left_bv || 0;
+      const prevTotalRight = wallet?.total_right_bv || 0;
+      const prevLeftCarry = wallet?.left_carryforward_bv || 0;
+      const prevRightCarry = wallet?.right_carryforward_bv || 0;
 
-  for (const purchase of pendingRoyaltyPurchases) {
-    const markAsProcessed = async () => {
-      await prisma.planPurchase.update({
-        where: { id: purchase.id },
-        data: { is_income_generated: "YES" },
-      });
-    };
+      const newLeftBV = Math.max(leftBV - prevTotalLeft, 0);
+      const newRightBV = Math.max(rightBV - prevTotalRight, 0);
 
-    if (!purchase.user.sponsorId) {
-      await markAsProcessed();
-      continue;
-    }
+      const totalLeft = prevLeftCarry + newLeftBV;
+      const totalRight = prevRightCarry + newRightBV;
 
-    const isQualifierPlan = royalQualifierPlans.some(p => p.planid === purchase.plan_id);
-    if (!isQualifierPlan) {
-      await markAsProcessed();
-      continue;
-    }
+      const matchedBv = Math.floor(Math.min(totalLeft, totalRight));
 
-    const sponsorDirects = await prisma.user.findUnique({
-      where: { id: purchase.user.sponsorId },
-      include: {
-        sponsoredUsers: {
-          where: {
-            planPurchases: { some: { status: "APPROVED" } }
+      if (matchedBv <= 0) {
+        await tx.wallet.upsert({
+          where: { user_id: userId },
+          update: {
+            total_left_bv: leftBV,
+            total_right_bv: rightBV,
+            left_carryforward_bv: totalLeft,
+            right_carryforward_bv: totalRight,
           },
-          orderBy: { createdAt: 'asc' },
-          select: { id: true }
-        }
-      }
-    });
-
-    if (!sponsorDirects) {
-      await markAsProcessed();
-      continue;
-    }
-
-    const buyerIndex = sponsorDirects.sponsoredUsers.findIndex(u => u.id === purchase.user_id);
-    if (buyerIndex < 2) {
-      await markAsProcessed();
-      continue; // Only 3rd+ referral gets royalty
-    }
-
-    const grossRoyalty = (Number(purchase.plan_amount) * royaltyPercentage) / 100;
-    if (grossRoyalty <= 0) {
-      await markAsProcessed();
-      continue;
-    }
-
-    const rTds = (grossRoyalty * tds) / 100;
-    const rAdmin = (grossRoyalty * admincharges) / 100;
-    const rNet = grossRoyalty - rTds - rAdmin;
-
-    totalGrandGross += grossRoyalty;
-    totalGrandTds += rTds;
-    totalGrandAdmin += rAdmin;
-    totalGrandNet += rNet;
-
-    await prisma.$transaction(async (tx) => {
-      const royaltyEntry = await tx.royalClubIncome.create({
-        data: {
-          user_id: purchase.user.sponsorId!,
-          generateIncomeId: generateIncomeEntry.id,
-          income: grossRoyalty,
-          message_data: `Royalty Income from ${purchase.user.firstName} ${purchase.user.lastName} (Plan: ${purchase.plan.planName})`,
-          status: "ACTIVE",
-        },
-      });
-
-      await tx.incomeHistory.create({
-        data: {
-          incomeId: generateIncomeEntry.id,
-          userId: purchase.user.sponsorId!,
-          totalIncome: grossRoyalty,
-          tds: rTds,
-          adminCharges: rAdmin,
-        },
-      });
-
-      await tx.wallet.upsert({
-        where: { user_id: purchase.user.sponsorId! },
-        update: {
-          total_income: { increment: rNet },
-        },
-        create: {
-          user_id: purchase.user.sponsorId!,
-          total_income: rNet,
-          matched_bv: 0,
-          total_left_bv: 0,
-          total_right_bv: 0,
-        },
-      });
-
-      await tx.walletTransaction.create({
-        data: {
-          user_id: purchase.user.sponsorId!,
-          type: "INCOME",
-          amount: rNet,
-          reference_id: royaltyEntry.id,
-          message: `Royalty income from referral ${purchase.user.memberId}`,
-          status: "ACTIVE",
-        },
-      });
-
-      await tx.planPurchase.update({
-        where: { id: purchase.id },
-        data: { is_income_generated: "YES" },
-      });
-    });
-
-    // Update result for response
-    const res = getOrCreateUserResult(purchase.user.sponsorId!);
-    res.royaltyIncome += grossRoyalty;
-    res.totalGross += grossRoyalty;
-    res.totalNet += rNet;
-  }
-
-  // ── 2. Binary Matching Income Processing ───────────────────────────────
-  console.log("Processing Binary Matching Income...");
-  for (const u of eligibleUsers) {
-    const userId = u.user_id;
-    const { leftBV, rightBV } = await getUserTotalBVRepo(userId);
-    const { leftCarry, rightCarry } = await getWalletCarryBV(userId);
-
-    const totalLeft = leftBV + leftCarry;
-    const totalRight = rightBV + rightCarry;
-    
-    // Floor matchedBv to ensure it's an integer for the DB
-    const matchedBvRaw = Math.min(totalLeft, totalRight);
-    const matchedBv = Math.floor(matchedBvRaw);
-    
-    if (matchedBv <= 0) {
-      if (leftBV > 0 || rightBV > 0) {
-        await prisma.$transaction(async (tx) => {
-          await tx.wallet.upsert({
-            where: { user_id: userId },
-            update: {
-              total_left_bv: { increment: leftBV },
-              total_right_bv: { increment: rightBV },
-              left_carryforward_bv: totalLeft,
-              right_carryforward_bv: totalRight,
-            },
-            create: {
-              user_id: userId,
-              total_income: 0,
-              matched_bv: 0,
-              total_left_bv: leftBV,
-              total_right_bv: rightBV,
-              left_carryforward_bv: totalLeft,
-              right_carryforward_bv: totalRight,
-            },
-          });
-
-          await tx.bVLedger.updateMany({
-             where: { user_id: userId, is_income_generated: "NO" },
-             data: { is_income_generated: "YES" }
-          });
+          create: {
+            user_id: userId,
+            total_income: 0,
+            total_left_bv: leftBV,
+            total_right_bv: rightBV,
+            left_carryforward_bv: totalLeft,
+            right_carryforward_bv: totalRight,
+          },
         });
+        continue;
       }
-      continue;
-    }
 
-    const newLeftCarry = totalLeft - matchedBv;
-    const newRightCarry = totalRight - matchedBv;
-    const grossIncome = (matchedBv * incomePercentage) / 100;
-    
-    if (grossIncome <= 0) continue;
+      const newLeftCarry = totalLeft - matchedBv;
+      const newRightCarry = totalRight - matchedBv;
 
-    const bTds = (grossIncome * tds) / 100;
-    const bAdmin = (grossIncome * admincharges) / 100;
-    const bNet = grossIncome - bTds - bAdmin;
+      const gross = (matchedBv * incomePercentage) / 100;
+      if (gross <= 0) continue;
 
-    totalGrandGross += grossIncome;
-    totalGrandTds += bTds;
-    totalGrandAdmin += bAdmin;
-    totalGrandNet += bNet;
+      const bTds = (gross * tds) / 100;
+      const bAdmin = (gross * admincharges) / 100;
+      const bNet = gross - bTds - bAdmin;
 
-    await prisma.$transaction(async (tx) => {
-      const incomeEntry = await tx.systemIncome.create({
+      totalBinary += gross;
+      totalTds += bTds;
+      totalAdmin += bAdmin;
+      totalNet += bNet;
+
+      const binaryEntry = await tx.systemIncome.create({
         data: {
           user_id: userId,
-          generateIncomeId: generateIncomeEntry.id,
+          generateIncomeId: batch.id,
           matched_bv: matchedBv,
-          income: grossIncome,
-          message_data: `Binary match: ${matchedBv} BV`,
+          income: gross,
+          message_data: `Binary match ${matchedBv}`,
           status: "ACTIVE",
-        },
-      });
-
-      await tx.incomeHistory.create({
-        data: {
-          incomeId: generateIncomeEntry.id,
-          userId,
-          totalIncome: grossIncome,
-          tds: bTds,
-          adminCharges: bAdmin,
         },
       });
 
       await tx.wallet.upsert({
         where: { user_id: userId },
         update: {
-          total_left_bv: { increment: leftBV },
-          total_right_bv: { increment: rightBV },
-          left_carryforward_bv: newLeftCarry,
-          right_carryforward_bv: newRightCarry,
-          matched_bv: { increment: matchedBv },
-          total_income: { increment: bNet },
-        },
-        create: {
-          user_id: userId,
           total_left_bv: leftBV,
           total_right_bv: rightBV,
           left_carryforward_bv: newLeftCarry,
           right_carryforward_bv: newRightCarry,
-          matched_bv: matchedBv,
+          matched_bv: (wallet?.matched_bv || 0) + matchedBv,
+          total_income: { increment: gross },
+        },
+        create: {
+          user_id: userId,
           total_income: bNet,
+          matched_bv: matchedBv,
+          total_left_bv: leftBV,
+          total_right_bv: rightBV,
+          left_carryforward_bv: newLeftCarry,
+          right_carryforward_bv: newRightCarry,
         },
       });
 
@@ -298,45 +142,141 @@ export const getIncomeGenarateRepo = async () => {
           user_id: userId,
           type: "INCOME",
           amount: bNet,
-          reference_id: incomeEntry.id,
-          message: `Binary matching income: ${matchedBv} BV matched`,
+          reference_id: binaryEntry.id,
+          message: "Binary Income",
           status: "ACTIVE",
         },
       });
 
-      await tx.bVLedger.updateMany({
-        where: { user_id: userId, is_income_generated: "NO" },
-        data: { is_income_generated: "YES" },
-      });
+      const mapData = userIncomeMap.get(userId) || {
+        binary: 0,
+        royalty: 0,
+        netBinary: 0,
+        netRoyality: 0,
+        tds: 0,
+        admin: 0,
+      };
 
-      await tx.planPurchase.updateMany({
-        where: { user_id: userId, status: "APPROVED", is_income_generated: "NO" },
-        data: { is_income_generated: "YES" },
-      });
+      mapData.binary += gross;
+      mapData.tds += bTds;
+      mapData.admin += bAdmin;
+      mapData.netBinary += bNet;
+
+      userIncomeMap.set(userId, mapData);
+    }
+    const relations = await tx.royalQualifier.findMany({
+      where: { status: "ACTIVE" },
     });
 
-    const res = getOrCreateUserResult(userId);
-    res.binaryIncome += grossIncome;
-    res.matchedBv += matchedBv;
-    res.totalGross += grossIncome;
-    res.totalNet += bNet;
-  }
+    for (const relation of relations) {
+      const parentId = relation.userId;
+      const childId = relation.childId;
 
-  // ── 3. Final Updates ──────────────────────────────────────────────────
-  await prisma.generateIncome.update({
-    where: { id: generateIncomeEntry.id },
-    data: {
-      totalIncome: totalGrandGross,
-      netincome: totalGrandNet,
-      tds: totalGrandTds,
-      adminCharges: totalGrandAdmin,
-    },
+      const childIncomes = await tx.systemIncome.findMany({
+        where: {
+          user_id: childId,
+          generateIncomeId: batch.id,
+        },
+      });
+
+      if (!childIncomes.length) continue;
+
+      const childTotal = childIncomes.reduce(
+        (sum, r) => sum + Number(r.income),
+        0
+      );
+
+      if (childTotal <= 0) continue;
+
+      const gross = (childTotal * royaltyPercentage) / 100;
+
+      const rTds = (gross * tds) / 100;
+      const rAdmin = (gross * admincharges) / 100;
+      const rNet = gross - rTds - rAdmin;
+
+      totalRoyalty += gross;
+      totalTds += rTds;
+      totalAdmin += rAdmin;
+      totalNet += rNet;
+
+      const royaltyEntry = await tx.royalClubIncome.create({
+        data: {
+          user_id: parentId,
+          generateIncomeId: batch.id,
+          income: gross,
+          message_data: `${royaltyPercentage}% from child ${childId}`,
+          status: "ACTIVE",
+        },
+      });
+
+      await tx.wallet.upsert({
+        where: { user_id: parentId },
+        update: {
+          total_income: { increment: rNet },
+        },
+        create: {
+          user_id: parentId,
+          total_income: rNet,
+        },
+      });
+
+      await tx.walletTransaction.create({
+        data: {
+          user_id: parentId,
+          type: "INCOME",
+          amount: rNet,
+          reference_id: royaltyEntry.id,
+          message: `Royalty from child ${childId}`,
+          status: "ACTIVE",
+        },
+      });
+
+      const mapData = userIncomeMap.get(parentId) || {
+        binary: 0,
+        royalty: 0,
+        netBinary: 0,
+        netRoyality: 0,
+        tds: 0,
+        admin: 0,
+      };
+
+      mapData.royalty += gross;
+      mapData.tds += rTds;
+      mapData.admin += rAdmin;
+      mapData.netRoyality += rNet;
+
+      userIncomeMap.set(parentId, mapData);
+    }
+
+    for (const [userId, data] of userIncomeMap.entries()) {
+      await tx.incomeHistory.create({
+        data: {
+          incomeId: batch.id,
+          userId,
+          totalIncome: data.binary + data.royalty,
+          netincome: data.netBinary + data.netRoyality,
+          tds: data.tds,
+          adminCharges: data.admin,
+        },
+      });
+    }
+
+    await tx.generateIncome.update({
+      where: { id: batch.id },
+      data: {
+        totalIncome: totalBinary + totalRoyalty,
+        binaryIncome: totalBinary,
+        royaltyIncome: totalRoyalty,
+        tds: totalTds,
+        adminCharges: totalAdmin,
+        netincome: totalNet,
+      },
+    });
+
+
+    return batch;
   });
-
-  console.log("Income Generation Completed Successfully.");
-  return Array.from(userResults.values());
 };
-
 export const genincomeGenrepo = async (page: number, limit: number) => {
   const skip = (page - 1) * limit;
 
@@ -354,8 +294,14 @@ export const genincomeGenrepo = async (page: number, limit: number) => {
   ]);
 
   const formattedData = data.map((batch) => {
-    const totalRoyalty = batch.royaltyIncomes.reduce((acc, curr) => acc + Number(curr.income), 0);
-    const totalBinary = batch.systemIncomes.reduce((acc, curr) => acc + Number(curr.income), 0);
+    const totalRoyalty = batch.royaltyIncomes.reduce(
+      (acc, curr) => acc + Number(curr.income),
+      0,
+    );
+    const totalBinary = batch.systemIncomes.reduce(
+      (acc, curr) => acc + Number(curr.income),
+      0,
+    );
     return { ...batch, totalRoyalty, totalBinary };
   });
 
@@ -368,21 +314,25 @@ export const genincomeGenrepo = async (page: number, limit: number) => {
   };
 };
 
-export const getIncomeByBatchRepo = async (batchId: number, page: number, limit: number) => {
+export const getIncomeByBatchRepo = async (
+  batchId: number,
+  page: number,
+  limit: number,
+) => {
   const skip = (page - 1) * limit;
 
   const systemIncomes = await prisma.systemIncome.findMany({
     where: { generateIncomeId: batchId },
-    include: { user: true }
+    include: { user: true },
   });
 
   const royaltyIncomes = await prisma.royalClubIncome.findMany({
     where: { generateIncomeId: batchId },
-    include: { user: true }
+    include: { user: true },
   });
 
   const historyRecords = await prisma.incomeHistory.findMany({
-    where: { incomeId: batchId }
+    where: { incomeId: batchId },
   });
 
   const merged: Record<number, any> = {};
@@ -485,7 +435,9 @@ export const incomeHistoryRepo = async (page: number, limit: number) => {
   });
 
   const userMap: Record<number, any> = {};
-  users.forEach((u) => { userMap[u.id] = u; });
+  users.forEach((u) => {
+    userMap[u.id] = u;
+  });
 
   const finalData = Object.values(merged).map((user: any) => {
     const totalInc = user.binaryIncome + user.royaltyIncome;

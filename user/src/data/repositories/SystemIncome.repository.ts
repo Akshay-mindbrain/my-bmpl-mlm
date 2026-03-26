@@ -6,21 +6,17 @@ export const createSystemIncome = async (
   matchedBV: number,
   incomeAmount: number,
   message: string | null,
+  generateIncomeId: number,
   tx: Prisma.TransactionClient,
 ) => {
-  if (!userId || !matchedBV || !incomeAmount) {
-    throw AppError.badRequest("Missing required fields");
-  }
-
   return tx.systemIncome.create({
     data: {
+      user_id: userId,                        
+      generateIncomeId: generateIncomeId,  
       matched_bv: matchedBV,
       income: new Prisma.Decimal(incomeAmount),
       message_data: message,
       status: "ACTIVE",
-      user: {
-        connect: { id: userId },
-      },
     },
   });
 };

@@ -24,7 +24,9 @@ const envVarsSchema = Joi.object({
   MAIL_USERNAME: Joi.string().allow(""),
   MAIL_PASSWORD: Joi.string().allow(""),
   ADMIN_EMAIL: Joi.string().email().default("admin@example.com"),
-  CORS_ORIGINS: Joi.string().default("http://localhost:5173,http://localhost:5174,http://localhost:5175"),
+  CORS_ORIGINS: Joi.string().default(
+    "http://localhost:5173,http://localhost:5174,http://localhost:5175",
+  ),
   DELIVERY_CHARGE: Joi.number().default(0),
   TAX_PERCENTAGE: Joi.number().default(0),
   MIN_ORDER_AMOUNT: Joi.number().default(0),

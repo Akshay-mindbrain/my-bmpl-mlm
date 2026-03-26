@@ -1,5 +1,8 @@
 import AppError from "@/errors/AppError";
-import { getAdminConfigUsecase, saveAdminConfigUsecase } from "@/useCase/Admin.config.usecase";
+import {
+  getAdminConfigUsecase,
+  saveAdminConfigUsecase,
+} from "@/useCase/Admin.config.usecase";
 import { Request, Response } from "express";
 
 export const saveconfigController = async (req: Request, res: Response) => {

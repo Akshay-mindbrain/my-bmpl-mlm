@@ -1,8 +1,8 @@
 import {
-    createSubCategory,
-    deleteSubcategoryController,
-    getSubCategories,
-    updateSubCategorycontroller,
+  createSubCategory,
+  deleteSubcategoryController,
+  getSubCategories,
+  updateSubCategorycontroller,
 } from "@/controllers/subcategory.controller";
 import express from "express";
 

@@ -1,6 +1,6 @@
 import {
-    deletecategoryrepo,
-    getCategoryrepo,
+  deletecategoryrepo,
+  getCategoryrepo,
 } from "@/data/repositories/category.repo";
 import { CreateCategoryDTO, UpdateCategoryDTO } from "@/dto";
 import prisma from "@/prisma-client";

@@ -1,4 +1,7 @@
-import { getconfigController, saveconfigController } from "@/controllers/Admin.config";
+import {
+  getconfigController,
+  saveconfigController,
+} from "@/controllers/Admin.config";
 import { verifyAdmin } from "@/middleware/verifyToken";
 import express from "express";
 export const adminconfigRoutes = express.Router();

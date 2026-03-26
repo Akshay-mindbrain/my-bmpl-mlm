@@ -72,9 +72,9 @@ export const elegibleForincome = async () => {
       where: { id: userId, status: "ACTIVE" },
       include: {
         planPurchases: {
-          where: { status: "APPROVED" }
-        }
-      }
+          where: { status: "APPROVED" },
+        },
+      },
     });
 
     if (!user) continue;
@@ -97,16 +97,20 @@ export const elegibleForincome = async () => {
       },
       include: {
         planPurchases: {
-          where: { status: "APPROVED" }
-        }
-      }
+          where: { status: "APPROVED" },
+        },
+      },
     });
 
     // Filter referrals who have at least one approved plan
-    const activeDirects = directReferrals.filter(dr => dr.planPurchases.length > 0);
+    const activeDirects = directReferrals.filter(
+      (dr) => dr.planPurchases.length > 0,
+    );
 
-    const hasLeftDirect = activeDirects.some(dr => dr.legPosition === "LEFT");
-    const hasRightDirect = activeDirects.some(dr => dr.legPosition === "RIGHT");
+    const hasLeftDirect = activeDirects.some((dr) => dr.legPosition === "LEFT");
+    const hasRightDirect = activeDirects.some(
+      (dr) => dr.legPosition === "RIGHT",
+    );
 
     if (hasLeftDirect && hasRightDirect) {
       qualifiedUsers.push({ user_id: userId });

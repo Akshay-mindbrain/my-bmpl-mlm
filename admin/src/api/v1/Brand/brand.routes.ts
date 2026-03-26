@@ -1,8 +1,8 @@
 import {
-    createBrandController,
-    deleteBrandController,
-    getBrandsController,
-    updateBrandController,
+  createBrandController,
+  deleteBrandController,
+  getBrandsController,
+  updateBrandController,
 } from "@/controllers/Brand.controller";
 import express from "express";
 

@@ -15,10 +15,12 @@ export const createServer = () => {
     .use(morganMiddleware)
     .use(express.urlencoded({ extended: true }))
     .use(express.json())
-    .use(cors({
-      origin: config.corsOrigins,
-      credentials: true
-    }));
+    .use(
+      cors({
+        origin: config.corsOrigins,
+        credentials: true,
+      }),
+    );
 
   app.use(cookieParser());
   app.use(helmet());

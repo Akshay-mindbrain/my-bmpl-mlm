@@ -52,6 +52,6 @@ export const rewardrepo = async () => {
   };
 };
 
-export const getRewardHistory = () =>{
-  return prisma.rewardHistory.findMany()
-}
+export const getRewardHistory = () => {
+  return prisma.rewardHistory.findMany();
+};

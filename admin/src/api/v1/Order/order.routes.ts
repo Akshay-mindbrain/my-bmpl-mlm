@@ -1,5 +1,9 @@
 import express from "express";
-import { getAllOrdersController, getOrderByIdController, updateOrderStatusController } from "@/controllers/Order.controller";
+import {
+  getAllOrdersController,
+  getOrderByIdController,
+  updateOrderStatusController,
+} from "@/controllers/Order.controller";
 import { verifyAdmin } from "@/middleware/verifyToken";
 
 const orderRouter = express.Router();

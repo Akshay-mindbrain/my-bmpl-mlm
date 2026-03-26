@@ -17,36 +17,38 @@ export const generatePayoutUsecase = async () => {
     let totalAdminBatch = 0;
 
     for (const wallet of eligibleUsers) {
-      // Sources of truth: 
+      // Sources of truth:
       // 1. wallet.total_income is the current available balance (Net)
       // 2. incomeHistory is the breakdown record
-      
+
       const availableBalance = Number(wallet.total_income);
-      
+
       // Fetch total deductions already recorded for this user
       const historySummary = await tx.incomeHistory.aggregate({
         where: { userId: wallet.user.id },
         _sum: {
           totalIncome: true,
           tds: true,
-          adminCharges: true
-        }
+          adminCharges: true,
+        },
       });
 
-      let userGross = Number(historySummary._sum.totalIncome || availableBalance);
+      let userGross = Number(
+        historySummary._sum.totalIncome || availableBalance,
+      );
       let userTds = Number(historySummary._sum.tds || 0);
       let userAdmin = Number(historySummary._sum.adminCharges || 0);
-      
+
       // Calculate Net according to user's requirement: Net = Gross - (TDS + Admin)
       let userNet = userGross - (userTds + userAdmin);
 
-      // Edge case: If for some reason the calculated net is vastly different from available balance 
+      // Edge case: If for some reason the calculated net is vastly different from available balance
       // (e.g. manual wallet updates or partial history), we prioritize paying out the available balance
       if (userNet <= 0 && availableBalance > 0) {
-          userNet = availableBalance;
-          userGross = availableBalance;
-          userTds = 0;
-          userAdmin = 0;
+        userNet = availableBalance;
+        userGross = availableBalance;
+        userTds = 0;
+        userAdmin = 0;
       }
 
       totalGrossBatch += userGross;
@@ -60,7 +62,7 @@ export const generatePayoutUsecase = async () => {
           payoutId: payout.id,
           totalAmount: userGross,
           tdsAmount: userTds,
-          adminCharges: userAdmin, 
+          adminCharges: userAdmin,
           netAmount: userNet,
           status: "ACTIVE",
         },
@@ -71,7 +73,7 @@ export const generatePayoutUsecase = async () => {
         where: { id: wallet.id },
         data: {
           total_income: 0,
-          total_withdraw: { increment: userNet }, 
+          total_withdraw: { increment: userNet },
         },
       });
     }
@@ -105,7 +107,11 @@ export const payoutHistoryUsecase = async (page: number, limit: number) => {
   return await payoutHistory(page, limit);
 };
 
-export const getPayoutDetailsUsecase = async (payoutId: number, page: number, limit: number) => {
+export const getPayoutDetailsUsecase = async (
+  payoutId: number,
+  page: number,
+  limit: number,
+) => {
   if (!page || page < 1) page = 1;
   if (!limit) limit = 10;
   return await getPayoutDetailsRepo(payoutId, page, limit);

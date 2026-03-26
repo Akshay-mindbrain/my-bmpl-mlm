@@ -15,12 +15,13 @@ export const loginApi = async (data: { username: string; password: string }) => 
     console.log(json);
 
 
-    if (!res.ok) {
+       if (!res.ok) {
       throw new Error(
-        json.message ||
+        // json.message ||
+        json?.error?.message ||
         json.error ||
         json.msg ||
-        `Login failed (${res.status})`
+        `Login failed(${ res.status })`
       );
     }
 

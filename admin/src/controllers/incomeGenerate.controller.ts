@@ -49,7 +49,10 @@ export const incomeHistoryController = async (req: Request, res: Response) => {
   }
 };
 
-export const getIncomeByBatchController = async (req: Request, res: Response) => {
+export const getIncomeByBatchController = async (
+  req: Request,
+  res: Response,
+) => {
   try {
     const batchId = Number(req.params.id);
     const page = Number(req.query.page) || 1;
