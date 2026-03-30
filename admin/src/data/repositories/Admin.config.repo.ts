@@ -8,7 +8,6 @@ export const createConfigRepo = async (data: CreateConfigDto) => {
   const configId = 1;
 
   return prisma.$transaction(async (tx) => {
-    // 1. Upsert the main config
     const config = await tx.config.upsert({
       where: { id: configId },
       update: {

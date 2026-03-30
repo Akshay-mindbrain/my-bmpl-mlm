@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { UpdateAdminDTO } from "@/dto";
 import AppError from "@/errors/AppError";
 import jwt from "jsonwebtoken";
@@ -13,12 +13,13 @@ import { MyJwtPayload } from "@/middleware/verifyToken";
 export const getAdmincontroller = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const token = req.cookies?.accessToken;
 
     if (!token) {
-      throw AppError.unauthorized("token not");
+      return next(AppError.unauthorized("Token not found"));
     }
 
     const decode = jwt.verify(
@@ -27,88 +28,81 @@ export const getAdmincontroller = async (
     ) as MyJwtPayload;
 
     if (!decode?.id) {
-      res.status(401).json({ msg: "Unauthorized" });
-      return;
+      return next(AppError.unauthorized("Unauthorized"));
     }
 
-    const Admin = await getAdminUsecase(decode.id);
+    const admin = await getAdminUsecase(decode.id);
 
-    if (!Admin) {
-      res.status(404).json({ msg: "Admin not found" });
-      return;
+    if (!admin) {
+      return next(AppError.notFound("Admin not found"));
     }
 
     res.status(200).json({
+      success: true,
       msg: "Admin fetched successfully",
-      Admin,
+      data: admin,
     });
   } catch (error) {
-    console.error(error);
-
-    res.status(401).json({
-      msg: "Invalid or expired token",
-    });
+    console.error("Get Admin Error:", error);
+    next(error);
   }
 };
 
 export const updateAdminController = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const id = parseInt(req.params.id, 10);
 
     if (isNaN(id)) {
-      throw AppError.notFound("id not found");
+      return next(AppError.badRequest("Invalid ID"));
     }
 
     const updatedAdmin: UpdateAdminDTO = await updateAdminUsecase(id, req.body);
 
     res.status(200).json({
-      msg: "User updated successfully",
-      updatedAdmin,
+      success: true,
+      msg: "Admin updated successfully",
+      data: updatedAdmin,
     });
   } catch (error: any) {
+    console.error("Update Admin Error:", error);
+
     if (error.code === "P2025") {
-      res.status(404).json({
-        msg: "Admin not found",
-      });
-      return;
+      return next(AppError.notFound("Admin not found"));
     }
 
-    console.error(error);
-    res.status(500).json({
-      msg: "Internal server error",
-    });
+    next(error);
   }
 };
 
 export const deleteAdminController = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const id = Number(req.params.id);
 
     if (!id) {
-      throw AppError.notFound("invality id");
+      return next(AppError.badRequest("Invalid ID"));
     }
 
     await deleteAdminUsecase(id);
 
     res.status(200).json({
+      success: true,
       msg: "Admin deleted successfully",
     });
   } catch (error: any) {
+    console.error("Delete Admin Error:", error);
+
     if (error.code === "P2025") {
-      res.status(404).json({
-        msg: "Admin not found",
-      });
-      return;
+      return next(AppError.notFound("Admin not found"));
     }
 
-    res.status(500).json({
-      msg: "Internal server error",
-    });
+    next(error);
   }
 };

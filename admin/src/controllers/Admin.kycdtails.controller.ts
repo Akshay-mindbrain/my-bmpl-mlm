@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import {
   getPendingKycUsecase,
   getApprovedKycUsecase,
@@ -8,92 +8,155 @@ import {
   updateKYcstatusUsecase,
 } from "@/useCase/Admin.kycdetails.usecase";
 import AppError from "@/errors/AppError";
-export const getPendingKycController = async (req: Request, res: Response) => {
+export const getPendingKycController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
 
     const result = await getPendingKycUsecase(page, limit);
 
-    res.status(200).json({ success: true, ...result });
-  } catch {
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({
+      success: true,
+      msg: "Pending KYC fetched successfully",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Pending KYC Error:", error);
+    next(error);
   }
 };
-
-export const getApprovedKycController = async (req: Request, res: Response) => {
+export const getApprovedKycController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
 
     const result = await getApprovedKycUsecase(page, limit);
 
-    res.status(200).json({ success: true, ...result });
-  } catch {
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({
+      success: true,
+      msg: "Approved KYC fetched successfully",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Approved KYC Error:", error);
+    next(error);
   }
 };
-
-export const getRejectedKycController = async (req: Request, res: Response) => {
+export const getRejectedKycController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
 
     const result = await getRejectedKycusecase(page, limit);
 
-    res.status(200).json({ success: true, ...result });
-  } catch {
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({
+      success: true,
+      msg: "Rejected KYC fetched successfully",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Rejected KYC Error:", error);
+    next(error);
   }
 };
-
-export const getAllKycController = async (req: Request, res: Response) => {
+export const getAllKycController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
 
     const result = await getAllKycusecase(page, limit);
 
-    res.status(200).json({ success: true, ...result });
-  } catch {
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(200).json({
+      success: true,
+      msg: "All KYC fetched successfully",
+      ...result,
+    });
+  } catch (error) {
+    console.error("All KYC Error:", error);
+    next(error);
   }
 };
 
-export const getOneKyccontroller = async (req: Request, res: Response) => {
-  try {
-    const id = Number(req.params.id);
-    if (!id) {
-      throw AppError.notFound("id is required");
-    }
-    const data = await getOneKycusecase(id);
-    res.status(200).json({ msg: "data created sycessfully", data });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server error", error });
-  }
-};
-export const updateKycStatusController = async (
+export const getOneKyccontroller = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ) => {
   try {
     const id = Number(req.params.id);
+
     if (!id) {
-      throw AppError.notFound("id is required");
+      return next(AppError.badRequest("ID is required"));
     }
-    const { remark, action } = req.body;
-    const kycstatus = await updateKYcstatusUsecase(id, action, remark);
+
+    const data = await getOneKycusecase(id);
+
+    if (!data) {
+      return next(AppError.notFound("KYC not found"));
+    }
+
     res.status(200).json({
-      message:
+      success: true,
+      msg: "KYC fetched successfully",
+      data,
+    });
+  } catch (error) {
+    console.error("Get One KYC Error:", error);
+    next(error);
+  }
+};
+
+export const updateKycStatusController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!id) {
+      return next(AppError.badRequest("ID is required"));
+    }
+
+    const { remark, action } = req.body;
+
+    if (!action) {
+      return next(AppError.badRequest("Action is required"));
+    }
+
+    const kycstatus = await updateKYcstatusUsecase(id, action, remark);
+
+    res.status(200).json({
+      success: true,
+      msg:
         action === "APPROVE"
           ? "KYC approved successfully"
           : "KYC rejected successfully",
-      kycstatus,
+      data: kycstatus,
     });
   } catch (error: any) {
-    res.status(400).json({
-      success: false,
-      message: error.message,
-    });
+    console.error("Update KYC Error:", error);
+
+    if (error.code === "P2025") {
+      return next(AppError.notFound("KYC not found"));
+    }
+
+    next(error);
   }
 };

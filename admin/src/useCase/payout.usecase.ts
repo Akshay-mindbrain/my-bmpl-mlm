@@ -10,7 +10,6 @@ export const generatePayoutUsecase = async () => {
   return prisma.$transaction(async (tx) => {
     // 1. Get eligible users (wallet balance > threshold)
     const { payout, eligibleUsers } = await generatePayoutRepo(tx);
-
     let totalGrossBatch = 0;
     let totalNetBatch = 0;
     let totalTdsBatch = 0;

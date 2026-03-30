@@ -10,7 +10,7 @@ export const createSubCategoryUsecase = async (data: CreateSubCategoryDTO) => {
   const subcategory = await createSubCategoryRepo(data);
 
   return {
-    message: "SubCategory created successfully",
+    msg: "SubCategory created successfully",
     data: subcategory,
   };
 };
@@ -33,7 +33,7 @@ export const updateSubCategoryUsecase = async (
   const subcategory = await updateSubCategoryRepo(id, data);
 
   return {
-    message: "SubCategory updated successfully",
+    msg: "SubCategory updated successfully",
     data: subcategory,
   };
 };

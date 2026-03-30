@@ -3,25 +3,44 @@ import {
   getAdminConfigUsecase,
   saveAdminConfigUsecase,
 } from "@/useCase/Admin.config.usecase";
-import { Request, Response } from "express";
-
-export const saveconfigController = async (req: Request, res: Response) => {
+import { Request, Response, NextFunction } from "express";
+export const saveconfigController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const data = await saveAdminConfigUsecase(req.body);
+
     if (!data) {
-      throw AppError.badRequest("data not created or updated");
+      return next(AppError.badRequest("Data not created or updated"));
     }
-    res.status(200).json({ msg: "config manage sucesfully", data });
-  } catch (error: any) {
-    throw AppError.internal(error);
+
+    res.status(200).json({
+      success: true,
+      msg: "Config managed successfully",
+      data,
+    });
+  } catch (error) {
+    console.error("Save Config Error:", error);
+    next(error);
   }
 };
-
-export const getconfigController = async (req: Request, res: Response) => {
+export const getconfigController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const data = await getAdminConfigUsecase();
-    res.status(200).json({ msg: "config fetched sucesfully", data });
-  } catch (error: any) {
-    throw AppError.internal(error);
+    const configData = await getAdminConfigUsecase();
+
+    res.status(200).json({
+      success: true,
+      msg: "Config fetched successfully",
+      data: configData,
+    });
+  } catch (error) {
+    console.error("Get Config Error:", error);
+    next(error);
   }
 };

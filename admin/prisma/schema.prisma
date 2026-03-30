@@ -518,7 +518,6 @@ model RoyalQualifier {
   user      User     @relation("RoyalUserRelation", fields: [userId], references: [id])
   child     User     @relation("RoyalChildRelation", fields: [childId], references: [id])
 
-  @@unique([userId, childId])
   @@index([userId])
   @@index([childId])
   @@map("royal_qualifier")
@@ -548,13 +547,11 @@ model SystemIncome {
   createdBy String?
   updatedBy String?
 
-  @@unique([user_id, generateIncomeId]) // 🔥 FINAL FIX
+  @@unique([user_id, generateIncomeId])
   @@index([createdAt])
   @@index([user_id])
-
   @@map("system_income")
 }
-
 //////////////////////////////////////////////////////
 // Wallet
 //////////////////////////////////////////////////////
@@ -563,8 +560,9 @@ model Wallet {
 
   user_id Int  @unique
   user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
+  
   total_income   Decimal @default(0) @db.Decimal(18, 3)
+  total_gross     Decimal @default(0) @db.Decimal(18, 3)
   total_withdraw Decimal @default(0) @db.Decimal(18, 3)
 
   total_dp_amount   Decimal @default(0) @db.Decimal(18, 3)

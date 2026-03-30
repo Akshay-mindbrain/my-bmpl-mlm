@@ -1,12 +1,16 @@
 import AppError from "@/errors/AppError";
 import { dasbordUsecase } from "@/useCase/Admin.dashboard.usecase";
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 
-export const dasboardController = async (req: Request, res: Response) => {
+export const dasboardController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const data = await dasbordUsecase();
-    res.status(201).json({ msg: "dasboard fetch sucessfully", data });
+    res.status(201).json({ msg: "dashboard fetch sucessfully", data });
   } catch (error) {
-    throw AppError.internal(error as any);
+    next(error);
   }
 };

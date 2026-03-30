@@ -15,31 +15,41 @@ import {
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { useGetAdmin } from "../../hooks/Admin/useGetAdmin"; // <-- import your hook
+import { useGetAdmin } from "../../hooks/Admin/useGetAdmin";
 import { useLogout } from "../../hooks/Auth/useLogout";
 
 const Topbar = () => {
   const [langMenu, setLangMenu] = useState<null | HTMLElement>(null);
   const [userMenu, setUserMenu] = useState<null | HTMLElement>(null);
+
   const { mutate: logoutMutate } = useLogout();
   const navigate = useNavigate();
 
-  // fetch admin
+  // ✅ fetch admin
   const { data: adminData, isLoading } = useGetAdmin();
 
+  // ✅ logout
   const handleLogout = () => {
-    logoutMutate({}, {
-      onSuccess: () => {
-        setUserMenu(null);
-        toast.success("Logout Successful");
-        navigate("/login");
-      },
-      onError: (error: any) => {
-        toast.error("Logout error: " + error.message);
-        console.error("Logout error:", error.message);
-      },
-    });
+    logoutMutate(
+      {},
+      {
+        onSuccess: () => {
+          setUserMenu(null);
+          toast.success("Logout Successful");
+          navigate("/login");
+        },
+        onError: (error: any) => {
+          toast.error("Logout error: " + error.message);
+          console.error("Logout error:", error.message);
+        },
+      }
+    );
   };
+
+  // ✅ Safe full name
+  const fullName =
+    `${adminData?.data?.firstName ?? ""} ${adminData?.data?.lastName ?? ""}`.trim() ||
+    "Admin User";
 
   return (
     <AppBar
@@ -56,6 +66,7 @@ const Topbar = () => {
       <Toolbar sx={{ display: "flex", alignItems: "center" }}>
         <Box sx={{ flexGrow: 1 }} />
 
+        {/* Language Menu */}
         <Menu
           anchorEl={langMenu}
           open={Boolean(langMenu)}
@@ -70,23 +81,28 @@ const Topbar = () => {
           sx={{ display: "flex", alignItems: "center", cursor: "pointer" }}
           onClick={(e) => setUserMenu(e.currentTarget)}
         >
-          <Avatar
-            alt="Profile"
-            sx={{ width: 40, height: 40 }}
-          />
+          <Avatar sx={{ width: 40, height: 40 }}>
+            {fullName.charAt(0)}
+          </Avatar>
+
           <Box sx={{ ml: 1 }}>
             {isLoading ? (
               <CircularProgress size={16} />
             ) : (
               <Typography sx={{ fontWeight: 600 }}>
-                {adminData?.Admin.firstName || "Admin User"} {adminData?.Admin.lastName}
+                {fullName}
               </Typography>
             )}
-            <Typography sx={{ fontSize: 12, color: "#7a7f85" }}>{adminData?.Admin.adminType}</Typography>
+
+            <Typography sx={{ fontSize: 12, color: "#7a7f85" }}>
+              {adminData?.data?.adminType || "Admin"}
+            </Typography>
           </Box>
+
           <KeyboardArrowDownIcon sx={{ ml: 1 }} />
         </Box>
 
+        {/* USER MENU */}
         <Menu
           anchorEl={userMenu}
           open={Boolean(userMenu)}
@@ -94,12 +110,17 @@ const Topbar = () => {
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <MenuItem component={Link} to="/profile" onClick={() => setUserMenu(null)}>
+          <MenuItem
+            component={Link}
+            to="/profile"
+            onClick={() => setUserMenu(null)}
+          >
             <ListItemIcon>
               <PersonIcon fontSize="small" />
             </ListItemIcon>
             My Profile
           </MenuItem>
+
           <MenuItem onClick={handleLogout}>
             <ListItemIcon>
               <LogoutIcon fontSize="small" />

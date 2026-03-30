@@ -54,6 +54,7 @@ export const getAdminApi = async () => {
   }
 
   const data = await res.json();
+  
 
   if (!res.ok) {
     throw new Error(data?.msg || "Fetch admin failed");

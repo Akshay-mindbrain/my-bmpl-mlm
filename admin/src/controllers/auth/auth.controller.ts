@@ -6,7 +6,7 @@ import {
   loginUsecase,
   logoutUsecase,
 } from "@/useCase/auth/auth.usecase";
-import { createAdminUsecase, getAdminUsecase } from "@/useCase/Admin.services";
+import { createAdminUsecase } from "@/useCase/Admin.services";
 import config from "@/config";
 import { MyJwtPayload } from "@/middleware/verifyToken";
 
@@ -16,15 +16,17 @@ export const loginController = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const data = req.body;
+    const { username, password } = req.body;
 
-    if (!data.username || !data.password) {
-      throw AppError.badRequest("Username and password are required");
+    if (!username || !password) {
+      return next(AppError.badRequest("Username and password are required"));
     }
+
     const { accessToken, refreshToken } = await loginUsecase(
-      data.username,
-      data.password,
+      username,
+      password,
     );
+
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       maxAge: 15 * 60 * 1000,
@@ -41,9 +43,10 @@ export const loginController = async (
 
     res.status(200).json({
       success: true,
-      message: "Login successful",
+      msg: "Login successful",
     });
   } catch (error) {
+    console.error("Login Error:", error);
     next(error);
   }
 };
@@ -55,8 +58,9 @@ export const RegenAccessToken = async (
 ): Promise<void> => {
   try {
     const token = req.cookies.refreshToken;
+
     if (!token) {
-      throw AppError.unauthorized("Refresh token not found");
+      return next(AppError.unauthorized("Refresh token not found"));
     }
 
     const accessToken = await genAcessUsecase(token);
@@ -69,10 +73,11 @@ export const RegenAccessToken = async (
 
     res.status(200).json({
       success: true,
-      message: "Access token generated successfully",
+      msg: "Access token generated successfully",
       accessToken,
     });
   } catch (error) {
+    console.error("Regen Token Error:", error);
     next(error);
   }
 };
@@ -80,31 +85,66 @@ export const RegenAccessToken = async (
 export const createAdmincontroller = async (
   req: Request,
   res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const admin = await createAdminUsecase(req.body);
 
     res.status(201).json({
       success: true,
-      message: "Admin created successfully",
+      msg: "Admin created successfully",
       data: admin,
     });
-  } catch (error: any) {
-    console.log("ERROR:", error);
-
-    if (error.status) {
-      res.status(error.status).json({
-        msg: error.message,
-      });
-      return;
-    }
-
-    res.status(500).json({
-      msg: "Internal server error",
-    });
+  } catch (error) {
+    console.error("Create Admin Error:", error);
+    next(error);
   }
 };
 
+export const logoutController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const token = req?.cookies?.accessToken;
+
+    if (!token) {
+      return next(AppError.notFound("Token not found"));
+    }
+
+    const decode = jwt.verify(
+      token,
+      config.jwtAccessSecret as string,
+    ) as MyJwtPayload;
+
+    const adminId = decode?.id;
+
+    if (!adminId) {
+      return next(AppError.notFound("Admin id is required"));
+    }
+
+    await logoutUsecase(adminId);
+
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      sameSite: "lax",
+    });
+
+    res.status(200).json({
+      success: true,
+      msg: "Logout successful",
+    });
+  } catch (error) {
+    console.error("Logout Error:", error);
+    next(error);
+  }
+};
 // export const updateAdminController = async (
 //   req: Request,
 //   res: Response,
@@ -113,7 +153,7 @@ export const createAdmincontroller = async (
 //     const id = parseInt(req.params.id);
 
 //     if (isNaN(id)) {
-//       throw AppError.notFound("invality id");
+//       throw AppError.notFound("invalid id");
 //     }
 
 //     const updatedAdmin: UpdateAdminDTO = await updateAdminUsecase(id, req.body);
@@ -149,7 +189,7 @@ export const createAdmincontroller = async (
 //     }
 
 //     await deleteAdminUsecase(id);
-//     res.status(201).json({ msg: "deleted admin sucessfully" });
+//     res.status(201).json({ msg: "Admin delete  sucessfully" });
 
 //     throw AppError;
 //   } catch (error: any) {
@@ -165,36 +205,3 @@ export const createAdmincontroller = async (
 //     });
 //   }
 // };
-
-export const logoutController = async (req: Request, res: Response) => {
-  try {
-    const token = req?.cookies?.accessToken;
-    if (!token) {
-      throw AppError.notFound("token not found");
-    }
-    const decode = jwt.verify(
-      token,
-      config.jwtAccessSecret as string,
-    ) as MyJwtPayload;
-    const adminId = decode?.id;
-    if (!adminId) {
-      throw AppError.notFound("admin id is required");
-    }
-    await logoutUsecase(adminId);
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      sameSite: "lax",
-    });
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      sameSite: "lax",
-    });
-    res.json({
-      msg: "Logout successful",
-    });
-  } catch (error: any) {
-    res.status(500).json({
-      msg: error.message,
-    });
-  }
-};

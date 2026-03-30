@@ -7,16 +7,21 @@ import {
   getPlanUsecase,
   updatePlanUSecase,
 } from "@/useCase/Admin.planmaster.usecase";
-import { Request, Response } from "express";
-
-export const createPlancontroller = async (req: Request, res: Response) => {
+import { Request, Response, NextFunction } from "express";
+export const createPlancontroller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { planName, Description, BV, price, dp_amount, features } = req.body;
+
     const isExistplan = await prisma.plansMaster.findUnique({
       where: { planName },
     });
+
     if (isExistplan) {
-      throw AppError.conflict("plan already exist");
+      return next(AppError.conflict("Plan already exists"));
     }
 
     const plan = await createPlanUsecase({
@@ -28,62 +33,123 @@ export const createPlancontroller = async (req: Request, res: Response) => {
       features,
     });
 
-    res.status(201).json(plan);
-  } catch (error: any) {
-    res.status(500).json({
-      message: error.message,
+    res.status(201).json({
+      success: true,
+      msg: "Plan created successfully",
+      data: plan,
     });
+  } catch (error) {
+    console.error("Create Plan Error:", error);
+    next(error);
   }
 };
 
-export const getplancontroller = async (_req: Request, res: Response) => {
+export const getplancontroller = async (
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const plan = await getPlanUsecase();
+
     if (!plan) {
-      throw AppError.notFound("plan not found");
+      return next(AppError.notFound("Plan not found"));
     }
-    res.status(200).json({ msg: "plan get sucessfully", plan });
+
+    res.status(200).json({
+      success: true,
+      msg: "Plan fetched successfully",
+      data: plan,
+    });
   } catch (error) {
-    res.status(500).json(error);
+    console.error("Get Plan Error:", error);
+    next(error);
   }
 };
 
-export const getPlanbyidcontrooler = async (req: Request, res: Response) => {
+export const getPlanbyidcontrooler = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const id = req.params.id;
+    const id = Number(req.params.id);
+
     if (!id) {
-      throw AppError.notFound("id not found");
+      return next(AppError.badRequest("Invalid ID"));
     }
-    const plan = await getplanByIdUsecase(Number(id));
-    res.status(201).json({ msg: "plan fetch sucessfully", plan });
+
+    const plan = await getplanByIdUsecase(id);
+
+    if (!plan) {
+      return next(AppError.notFound("Plan not found"));
+    }
+
+    res.status(200).json({
+      success: true,
+      msg: "Plan fetched successfully",
+      data: plan,
+    });
   } catch (error) {
-    res.status(500).json(error);
+    console.error("Get Plan By ID Error:", error);
+    next(error);
   }
 };
-export const updatePlancontroller = async (req: Request, res: Response) => {
+
+export const updatePlancontroller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const id = req.params.id;
+    const id = Number(req.params.id);
+
     if (!id) {
-      throw AppError.notFound("id not found");
+      return next(AppError.badRequest("Invalid ID"));
     }
-    const updateplan = await updatePlanUSecase(Number(id), req.body);
+
+    const updateplan = await updatePlanUSecase(id, req.body);
+
     if (!updateplan) {
-      throw AppError.notFound("plan not found");
+      return next(AppError.notFound("Plan not found"));
     }
-    res.status(200).json({ msg: "upadate user sucessfully", updateplan });
-  } catch (error: any) {
-    throw AppError.internal(error);
+
+    res.status(200).json({
+      success: true,
+      msg: "Plan updated successfully",
+      data: updateplan,
+    });
+  } catch (error) {
+    console.error("Update Plan Error:", error);
+    next(error);
   }
 };
-export const deleteplancontroller = async (req: Request, res: Response) => {
+
+export const deleteplancontroller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const id = req.params.id;
+    const id = Number(req.params.id);
+
     if (!id) {
-      throw AppError.notFound("id is required");
+      return next(AppError.badRequest("Invalid ID"));
     }
-    const deleteplan = await deleteplanusecase(Number(id));
-    res.status(200).json({ msg: "deleted sycessfully" });
+
+    await deleteplanusecase(id);
+
+    res.status(200).json({
+      success: true,
+      msg: "Plan deleted successfully",
+    });
   } catch (error: any) {
-    throw AppError.internal(error);
+    console.error("Delete Plan Error:", error);
+
+    if (error.code === "P2025") {
+      return next(AppError.notFound("Plan not found"));
+    }
+
+    next(error);
   }
 };

@@ -237,7 +237,6 @@ CREATE TABLE `royal_qualifier` (
 
     INDEX `royal_qualifier_userId_idx`(`userId`),
     INDEX `royal_qualifier_childId_idx`(`childId`),
-    UNIQUE INDEX `royal_qualifier_userId_childId_key`(`userId`, `childId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -266,6 +265,7 @@ CREATE TABLE `wallet` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `user_id` INTEGER NOT NULL,
     `total_income` DECIMAL(18, 3) NOT NULL DEFAULT 0,
+    `total_gross` DECIMAL(18, 3) NOT NULL DEFAULT 0,
     `total_withdraw` DECIMAL(18, 3) NOT NULL DEFAULT 0,
     `total_dp_amount` DECIMAL(18, 3) NOT NULL DEFAULT 0,
     `balance_dp_amount` DECIMAL(18, 3) NOT NULL DEFAULT 0,

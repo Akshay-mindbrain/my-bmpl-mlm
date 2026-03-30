@@ -9,13 +9,12 @@ import {
 import { getUserTotalBVRepo } from "./Admin.totalbv.repo";
 
 export const getIncomeGenarateRepo = async () => {
-  console.log("🚀 Income Generation Started...");
-
   return prisma.$transaction(async (tx) => {
     const eligibleUsers = await elegibleForincome();
     const incomePercentage = await getIncomePercentage();
     const royaltyPercentage = await getRoyalityPercentage();
     const { tds, admincharges } = await getTDS();
+
     const batch = await tx.generateIncome.create({
       data: {
         totalIncome: 0,
@@ -115,7 +114,6 @@ export const getIncomeGenarateRepo = async () => {
           status: "ACTIVE",
         },
       });
-
       await tx.wallet.upsert({
         where: { user_id: userId },
         update: {
@@ -124,11 +122,10 @@ export const getIncomeGenarateRepo = async () => {
           left_carryforward_bv: newLeftCarry,
           right_carryforward_bv: newRightCarry,
           matched_bv: (wallet?.matched_bv || 0) + matchedBv,
-          total_income: { increment: gross },
         },
         create: {
           user_id: userId,
-          total_income: bNet,
+          total_income: 0,
           matched_bv: matchedBv,
           total_left_bv: leftBV,
           total_right_bv: rightBV,
@@ -164,6 +161,8 @@ export const getIncomeGenarateRepo = async () => {
 
       userIncomeMap.set(userId, mapData);
     }
+
+    // ================= ROYALTY =================
     const relations = await tx.royalQualifier.findMany({
       where: { status: "ACTIVE" },
     });
@@ -183,7 +182,7 @@ export const getIncomeGenarateRepo = async () => {
 
       const childTotal = childIncomes.reduce(
         (sum, r) => sum + Number(r.income),
-        0
+        0,
       );
 
       if (childTotal <= 0) continue;
@@ -206,17 +205,6 @@ export const getIncomeGenarateRepo = async () => {
           income: gross,
           message_data: `${royaltyPercentage}% from child ${childId}`,
           status: "ACTIVE",
-        },
-      });
-
-      await tx.wallet.upsert({
-        where: { user_id: parentId },
-        update: {
-          total_income: { increment: rNet },
-        },
-        create: {
-          user_id: parentId,
-          total_income: rNet,
         },
       });
 
@@ -248,6 +236,24 @@ export const getIncomeGenarateRepo = async () => {
       userIncomeMap.set(parentId, mapData);
     }
 
+    // ================= WALLET FINAL UPDATE =================
+    for (const [userId, data] of userIncomeMap.entries()) {
+      const totalGrossIncome = data.binary + data.royalty;
+
+      await tx.wallet.upsert({
+        where: { user_id: userId },
+        update: {
+          total_income: { increment: totalGrossIncome },
+          total_gross: { increment: totalGrossIncome },
+        },
+        create: {
+          user_id: userId,
+          total_income: totalGrossIncome,
+        },
+      });
+    }
+
+    // ================= HISTORY =================
     for (const [userId, data] of userIncomeMap.entries()) {
       await tx.incomeHistory.create({
         data: {
@@ -261,6 +267,7 @@ export const getIncomeGenarateRepo = async () => {
       });
     }
 
+    // ================= FINAL =================
     await tx.generateIncome.update({
       where: { id: batch.id },
       data: {
@@ -272,7 +279,6 @@ export const getIncomeGenarateRepo = async () => {
         netincome: totalNet,
       },
     });
-
 
     return batch;
   });

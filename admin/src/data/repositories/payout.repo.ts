@@ -24,8 +24,6 @@ export const generatePayoutRepo = async (tx: any) => {
     include: { user: true },
   });
 
-  console.log(eligibleUsers);
-
   return { payout, eligibleUsers };
 };
 
@@ -35,6 +33,9 @@ export const getpayoutrepo = async (page: number, limit: number) => {
     prisma.payout.findMany({
       skip,
       take: limit,
+      orderBy:{
+        createdAt:"desc"
+      }
     }),
     prisma.payout.count(),
   ]);

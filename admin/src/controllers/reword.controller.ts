@@ -1,24 +1,43 @@
 import AppError from "@/errors/AppError";
 import {
   rewardhistoryHistryusecase,
-  rewordUsecase,
+  rewardUsecase,
 } from "@/useCase/rewards.usecase";
-import { Request, Response } from "express";
-
-export const rewardcontroller = async (req: Request, res: Response) => {
+import { Request, Response, NextFunction } from "express";
+export const rewardcontroller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-    const reward = await rewordUsecase();
-    res.status(201).json({ msg: "rewrd get secessfully", reward });
-  } catch (error: any) {
-    throw AppError.internal(error);
+    const reward = await rewardUsecase();
+
+    res.status(200).json({
+      success: true,
+      msg: "Reward fetched successfully",
+      data: reward,
+    });
+  } catch (error) {
+    console.error("Reward Error:", error);
+    next(error);
   }
 };
 
-export const getrewardcontroller = async (req: Request, res: Response) => {
+export const getrewardcontroller = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const reward = await rewardhistoryHistryusecase();
-    res.status(201).json({ msg: "rewrd get secessfully", reward });
-  } catch (error: any) {
-    throw AppError.internal(error);
+
+    res.status(200).json({
+      success: true,
+      msg: "Reward history fetched successfully",
+      data: reward,
+    });
+  } catch (error) {
+    console.error("Reward History Error:", error);
+    next(error);
   }
 };
